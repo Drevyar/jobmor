@@ -1,6 +1,7 @@
 # JobMor
 
-Mobile job marketplace for KU Sriracha students and local employers.
+Mobile job marketplace for Kasetsart University Sriracha students and local
+employers.
 
 The Expo project and full team documentation are in [`jobmor-ku-sriracha/`](./jobmor-ku-sriracha/README.md).
 
@@ -10,4 +11,4 @@ npm install
 npm start
 ```
 
-Current version: **0.1.0 — UI foundation**
+Current version: **0.1.0 — authentication and UI foundation**
