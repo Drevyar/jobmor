@@ -42,6 +42,8 @@ export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
  * Call once from the future AuthProvider and use the returned cleanup function.
  */
 export function startSupabaseAutoRefresh() {
+  if (Platform.OS === 'web') return () => undefined;
+
   const handleAppStateChange = (state: AppStateStatus) => {
     if (state === 'active') {
       supabase.auth.startAutoRefresh();
