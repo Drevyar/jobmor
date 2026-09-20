@@ -1,0 +1,59 @@
+# Learn more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# ─── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+
+# ─── Expo ────────────────────────────────────────────────────────────────────
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+
+# ─── Native build outputs ─────────────────────────────────────────────────────
+/ios
+/android
+.kotlin/
+build/
+*.orig.*
+
+# ─── Native signing / secrets ─────────────────────────────────────────────────
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# ─── Metro ───────────────────────────────────────────────────────────────────
+.metro-health-check*
+
+# ─── Environment variables ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# ─── TypeScript ───────────────────────────────────────────────────────────────
+*.tsbuildinfo
+
+# ─── Testing / Coverage ───────────────────────────────────────────────────────
+coverage/
+
+# ─── macOS ───────────────────────────────────────────────────────────────────
+.DS_Store
+
+# ─── Windows ─────────────────────────────────────────────────────────────────
+Thumbs.db
+
+# ─── VS Code ─────────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
