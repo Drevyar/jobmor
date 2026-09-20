@@ -2,7 +2,6 @@ import * as Linking from 'expo-linking';
 
 import { supabase } from '@/lib/supabase';
 import type { RegistrationForm } from '@/features/auth/types';
-import type { UserRole } from '@/types/user';
 
 const EMAIL_REDIRECT_URL = 'jobmorkusriracha://auth/callback';
 
@@ -43,19 +42,7 @@ export async function loginAccount(email: string, password: string) {
   });
 
   if (error) throw error;
-
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', data.user.id)
-    .single();
-
-  if (profileError || !profile) {
-    await supabase.auth.signOut();
-    throw profileError ?? new Error('User profile was not found.');
-  }
-
-  return profile.role as UserRole;
+  return data;
 }
 
 export async function logoutAccount() {
