@@ -1,1 +1,5 @@
-import { FeatureScreen } from '@/components/feature-screen'; export default function ProfileScreen() { return <FeatureScreen titleKey="admin.profile" />; }
+import { AuthenticatedProfileScreen } from '@/features/auth/authenticated-profile-screen';
+
+export default function ProfileScreen() {
+  return <AuthenticatedProfileScreen titleKey="admin.profile" />;
+}
