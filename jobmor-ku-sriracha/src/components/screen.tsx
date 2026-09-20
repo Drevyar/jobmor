@@ -41,7 +41,7 @@ export function EmptySection({ title, body }: { title?: string; body?: string })
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 }, content: { padding: 20, paddingBottom: 32, gap: 20, width: '100%', maxWidth: 760, alignSelf: 'center' },
+  safeArea: { flex: 1 }, content: { padding: 20, paddingBottom: 100, gap: 20, width: '100%', maxWidth: 760, alignSelf: 'center' },
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }, heading: { flex: 1, gap: 4 },
   title: { fontSize: 27, lineHeight: 34, fontWeight: '800' }, subtitle: { fontSize: 14, lineHeight: 20 },
   languageButton: { minWidth: 60, height: 38, paddingHorizontal: 10, borderRadius: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }, languageText: { fontSize: 12, fontWeight: '800' },
