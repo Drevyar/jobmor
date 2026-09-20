@@ -21,10 +21,12 @@
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
+    "react-native-url-polyfill": "^4.0.0",
     "react-native-web": "~0.21.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "supabase": "^2.117.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -34,7 +36,13 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck"
+    "check": "npm run lint && npm run typecheck",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:push": "supabase db push",
+    "supabase:types": "supabase gen types typescript --linked --schema public > src/types/database.generated.ts",
+    "admin:create": "node scripts/create-admin.mjs"
   },
   "private": true
 }

@@ -15,7 +15,7 @@
 export type UserRole = 'student' | 'employer' | 'admin';
 
 /** Verification state of a student account. */
-export type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'rejected';
+export type VerificationStatus = 'pending_email' | 'verified' | 'suspended';
 
 /**
  * Core user record (mirrors Supabase auth.users + custom profile).
@@ -29,6 +29,8 @@ export interface User {
   role: UserRole;
   /** Display name. */
   displayName: string;
+  /** Contact phone number supplied during registration. */
+  phone: string;
   /** URL to profile avatar image. */
   avatarUrl?: string;
   /** ISO date-time string when the account was created. */
@@ -71,8 +73,8 @@ export interface EmployerProfile extends User {
   category?: string;
   /** Business address or area. */
   address?: string;
-  /** Whether the employer account has been verified by an admin. */
-  isVerified: boolean;
+  /** Email verification or suspension state. */
+  verificationStatus: VerificationStatus;
   /** Total number of active job listings. */
   activeJobCount?: number;
 }

@@ -1,0 +1,2 @@
+-- Keep this file free of real users, passwords, tokens, and production data.
+-- Reference values required by the app belong in migrations so every environment is identical.
