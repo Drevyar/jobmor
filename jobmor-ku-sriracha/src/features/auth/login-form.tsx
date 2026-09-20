@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { type Href, router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,13 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { loginAccount } from '@/features/auth/auth-service';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/providers/localization-provider';
-import type { UserRole } from '@/types/user';
-
-const HOME_BY_ROLE: Record<UserRole, Href> = {
-  student: '/(student)/home',
-  employer: '/(employer)/dashboard',
-  admin: '/(admin)/dashboard',
-};
 
 export function LoginForm({ onBack }: { onBack: () => void }) {
   const colors = useTheme();
@@ -41,8 +33,7 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
     setSubmitting(true);
     setError('');
     try {
-      const role = await loginAccount(email, password);
-      router.replace(HOME_BY_ROLE[role]);
+      await loginAccount(email, password);
     } catch (submitError) {
       const detail = submitError instanceof Error ? submitError.message : '';
       setError(`${t('auth.loginFailed')}${detail ? ` (${detail})` : ''}`);
