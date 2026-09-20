@@ -1,3 +1,5 @@
+import * as Linking from 'expo-linking';
+
 import { supabase } from '@/lib/supabase';
 import type { RegistrationForm } from '@/features/auth/types';
 import type { UserRole } from '@/types/user';
@@ -59,4 +61,52 @@ export async function loginAccount(email: string, password: string) {
 export async function logoutAccount() {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
+}
+
+export async function requestPasswordReset(email: string) {
+  const redirectTo = Linking.createURL('reset-password');
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    email.trim().toLowerCase(),
+    { redirectTo },
+  );
+
+  if (error) throw error;
+}
+
+export async function createRecoverySessionFromUrl(url: string) {
+  const fragment = url.includes('#') ? url.split('#')[1] : '';
+  const query = url.includes('?') ? url.split('?')[1]?.split('#')[0] : '';
+  const params = new URLSearchParams(query);
+  new URLSearchParams(fragment).forEach((value, key) => params.set(key, value));
+  const errorDescription = params.get('error_description');
+
+  if (errorDescription) throw new Error(errorDescription);
+
+  const code = params.get('code');
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    return;
+  }
+
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  if (!accessToken || !refreshToken) {
+    throw new Error('Password recovery tokens are missing or expired.');
+  }
+
+  const { error } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+
+  if (error) throw error;
+}
+
+export async function updatePassword(password: string) {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+
+  // Require a fresh login after changing a password.
+  await logoutAccount();
 }

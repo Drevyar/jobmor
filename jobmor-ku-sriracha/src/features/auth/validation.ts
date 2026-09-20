@@ -4,6 +4,14 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const KU_EMAIL_PATTERN = /^[a-z0-9._%+\-]+@ku\.th$/i;
 const PHONE_PATTERN = /^[0-9+\-\s]{9,20}$/;
 
+export function validatePassword(password: string) {
+  if (password.length < 8) return 'passwordLength' as const;
+  if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+    return 'passwordFormat' as const;
+  }
+  return undefined;
+}
+
 export function validateRegistration(form: RegistrationForm): RegistrationErrors {
   const errors: RegistrationErrors = {};
   const email = form.email.trim().toLowerCase();
@@ -13,11 +21,7 @@ export function validateRegistration(form: RegistrationForm): RegistrationErrors
   if (form.role === 'student' && !KU_EMAIL_PATTERN.test(email)) errors.email = 'kuEmailOnly';
   if (!PHONE_PATTERN.test(form.phone.trim())) errors.phone = 'invalidPhone';
 
-  if (form.password.length < 8) {
-    errors.password = 'passwordLength';
-  } else if (!/[a-z]/.test(form.password) || !/[A-Z]/.test(form.password) || !/\d/.test(form.password)) {
-    errors.password = 'passwordFormat';
-  }
+  errors.password = validatePassword(form.password);
 
   if (form.confirmPassword !== form.password) errors.confirmPassword = 'passwordMismatch';
 
