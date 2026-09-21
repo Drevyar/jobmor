@@ -1,4 +1,4 @@
-import type { VerificationQueueItem, ReportQueueItem } from '../types/moderation';
+import type { VerificationQueueItem, ReportQueueItem, ManagedUserItem } from '../types/moderation';
 
 export const MOCK_VERIFICATIONS: VerificationQueueItem[] = [
   {
@@ -48,5 +48,75 @@ export const MOCK_REPORTS: ReportQueueItem[] = [
     reason: 'รายละเอียดค่าจ้างไม่ตรงตามที่ประกาศไว้',
     createdAt: '2026-09-20T11:00:00Z',
     status: 'pending',
+  },
+];
+
+export const MOCK_MANAGED_USERS: ManagedUserItem[] = [
+  {
+    id: 'usr-01',
+    displayName: 'สมชาย ใจดี',
+    email: 'somchai.ja@ku.th',
+    role: 'student',
+    accountStatus: 'pending',
+    verificationStatus: 'pending',
+    studentId: '653020012-3',
+    faculty: 'วิศวกรรมศาสตร์ ศรีราชา',
+    universityEmail: 'somchai.ja@ku.th',
+    joinedAt: '2026-09-21',
+  },
+  {
+    id: 'usr-02',
+    displayName: 'กนกวรรณ สุขเสริฐ',
+    email: 'kanokwan.su@ku.th',
+    role: 'student',
+    accountStatus: 'pending',
+    verificationStatus: 'pending',
+    studentId: '643030114-1',
+    faculty: 'วิทยาการจัดการ',
+    universityEmail: 'kanokwan.su@ku.th',
+    joinedAt: '2026-09-21',
+  },
+  {
+    id: 'usr-03',
+    displayName: 'อภิสิทธิ์ วงศ์สวรรค์',
+    email: 'apisit.w@ku.th',
+    role: 'student',
+    accountStatus: 'active',
+    verificationStatus: 'verified',
+    studentId: '633010022-9',
+    faculty: 'วิทยาศาสตร์ ศรีราชา',
+    universityEmail: 'apisit.w@ku.th',
+    joinedAt: '2026-08-15',
+  },
+  {
+    id: 'usr-04',
+    displayName: 'Café Amazon KU Branch',
+    email: 'contact@cafeamazon-ku.com',
+    role: 'employer',
+    accountStatus: 'active',
+    companyName: 'Café Amazon สาขา มก. ศรีราชา',
+    category: 'อาหารและเครื่องดื่ม',
+    joinedAt: '2026-07-10',
+  },
+  {
+    id: 'usr-05',
+    displayName: 'Seven-Eleven อ่าวอุดม',
+    email: 'hr@7eleven-aoudom.co.th',
+    role: 'employer',
+    accountStatus: 'active',
+    companyName: '7-Eleven สาขาประตู 1 อ่าวอุดม',
+    category: 'ค้าปลีกและบริการ',
+    joinedAt: '2026-06-01',
+  },
+  {
+    id: 'usr-06',
+    displayName: 'พงศกร สันติสุข',
+    email: 'pongsakorn.s@gmail.com',
+    role: 'student',
+    accountStatus: 'suspended',
+    verificationStatus: 'rejected',
+    studentId: '623050119-0',
+    faculty: 'เศรษฐศาสตร์ ศรีราชา',
+    joinedAt: '2026-05-18',
   },
 ];

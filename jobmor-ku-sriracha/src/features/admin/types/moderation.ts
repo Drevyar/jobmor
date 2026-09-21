@@ -1,8 +1,10 @@
 import type { IconName } from '@/constants/roles';
+import type { UserRole } from '@/types/user';
 
 export type VerificationStatus = 'pending' | 'verified' | 'rejected';
 export type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 export type TargetType = 'user' | 'job';
+export type UserAccountStatus = 'active' | 'suspended' | 'pending';
 
 export interface ModerationMetric {
   id: string;
@@ -33,4 +35,19 @@ export interface ReportQueueItem {
   reason: string;
   createdAt: string;
   status: ReportStatus;
+}
+
+export interface ManagedUserItem {
+  id: string;
+  displayName: string;
+  email: string;
+  role: UserRole;
+  accountStatus: UserAccountStatus;
+  verificationStatus?: VerificationStatus;
+  studentId?: string;
+  faculty?: string;
+  universityEmail?: string;
+  companyName?: string;
+  category?: string;
+  joinedAt: string;
 }
