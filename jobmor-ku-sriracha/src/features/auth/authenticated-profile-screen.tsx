@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
@@ -8,7 +8,7 @@ import { logoutAccount } from '@/features/auth/auth-service';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/providers/localization-provider';
 
-export function AuthenticatedProfileScreen({ titleKey }: { titleKey: string }) {
+export function AuthenticatedProfileScreen({ titleKey, children }: PropsWithChildren<{ titleKey: string }>) {
   const colors = useTheme();
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
@@ -33,6 +33,7 @@ export function AuthenticatedProfileScreen({ titleKey }: { titleKey: string }) {
           <Ionicons name="person-outline" size={28} color={colors.primary} />
         </View>
         <Text style={[styles.body, { color: colors.textMuted }]}>{t('auth.profileSession')}</Text>
+        {children ? <View style={{ width: '100%', gap: 12, marginTop: 20 }}>{children}</View> : null}
         {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
         <Pressable disabled={submitting} onPress={logout} style={[styles.logoutButton, { borderColor: colors.danger }, submitting && styles.disabled]}>
           {submitting ? <ActivityIndicator color={colors.danger} /> : <Ionicons name="log-out-outline" size={20} color={colors.danger} />}

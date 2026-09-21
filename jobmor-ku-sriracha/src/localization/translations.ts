@@ -1,7 +1,9 @@
 import { employerCopy } from '@/features/employer/copy';
+import { studentCopy } from '@/features/student/copy';
 
 export const translations = {
   en: {
+    studentFlow: studentCopy.en,
     employerFlow: employerCopy.en,
     common: { emptyTitle: 'Nothing here yet', emptyBody: 'This area is ready for its feature branch.', search: 'Search', seeAll: 'See all', language: 'TH' },
     role: { choose: 'Choose a workspace', preview: 'Development preview only — authentication will be added later.', student: 'Student', employer: 'Employer', admin: 'Admin', studentBody: 'Find and manage nearby opportunities.', employerBody: 'Create jobs and review applicants.', adminBody: 'Review users, jobs, and reports.' },
@@ -12,6 +14,7 @@ export const translations = {
     auth: { login: 'Sign in', loginTitle: 'Welcome back', loginHint: 'Use your email and password. We will open the correct workspace for your role.', loggingIn: 'Signing in...', loginRequired: 'Enter your email and password', loginFailed: 'Could not sign in. Check your email, password, and email verification.', sessionLoadFailed: 'Could not load your session', tryAgain: 'Try again', logout: 'Sign out', loggingOut: 'Signing out...', logoutFailed: 'Could not sign out. Please try again.', profileSession: 'You are currently signed in to JobMor.', orRegister: 'or create an account', createAccount: 'Create your account', chooseAccount: 'Choose the account type you want to register', registerStudent: 'Student registration', registerEmployer: 'Employer registration', studentHint: 'Use your @ku.th email address', employerHint: 'Use an email address you can verify', name: 'Full name', contactName: 'Contact name', email: 'Email', phone: 'Phone number', password: 'Password', confirmPassword: 'Confirm password', companyName: 'Shop / company name', category: 'Business category', chooseCategory: 'Choose a category', customCategory: 'Enter your business category', address: 'Business address', submit: 'Create account', submitting: 'Creating account...', checkEmail: 'Check your email', checkEmailBody: 'We sent a confirmation link to your email address. Confirm it before signing in.', verifiedTitle: 'Email verified', verifiedBody: 'Your account is ready. You can now sign in.', back: 'Back', backHome: 'Back to account selection', other: 'Other', required: 'This field is required', invalidEmail: 'Enter a valid email address', kuEmailOnly: 'Students must use an @ku.th email address', invalidPhone: 'Enter a valid phone number', passwordLength: 'Password must contain at least 8 characters', passwordFormat: 'Use uppercase, lowercase, and at least one number', passwordMismatch: 'Passwords do not match', registerFailed: 'Could not create the account. Please try again.', categories: { food: 'Food & Beverage', retail: 'Retail', hospitality: 'Hospitality', education: 'Education', events: 'Events', office: 'Office & Administration', technology: 'Technology', logistics: 'Logistics' } },
   },
   th: {
+    studentFlow: studentCopy.th,
     employerFlow: employerCopy.th,
     common: { emptyTitle: 'ยังไม่มีข้อมูล', emptyBody: 'พื้นที่นี้พร้อมสำหรับการพัฒนาต่อใน feature branch', search: 'ค้นหา', seeAll: 'ดูทั้งหมด', language: 'EN' },
     role: { choose: 'เลือกพื้นที่ทำงาน', preview: 'สำหรับดู UI ระหว่างพัฒนาเท่านั้น — ระบบเข้าสู่ระบบจะทำภายหลัง', student: 'นักศึกษา', employer: 'ผู้ประกอบการ', admin: 'ผู้ดูแลระบบ', studentBody: 'ค้นหาและจัดการโอกาสงานใกล้คุณ', employerBody: 'สร้างงานและตรวจสอบผู้สมัคร', adminBody: 'ตรวจสอบผู้ใช้ งาน และรายงาน' },
