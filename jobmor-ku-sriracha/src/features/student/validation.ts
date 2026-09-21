@@ -1,6 +1,6 @@
 export function validateStudentProfile(form: { display_name: string; phone: string }) {
-  // Match profiles CHECK constraints; do not invent additional student fields/limits.
-  return form.display_name.trim() && form.phone.trim() ? null : 'required';
+  if (!form.display_name.trim() || !form.phone.trim()) return 'required';
+  return form.display_name.trim().length > 160 || form.phone.trim().length > 20 ? 'profileTooLong' : null;
 }
 
 export function canWithdraw(status: string | undefined) {

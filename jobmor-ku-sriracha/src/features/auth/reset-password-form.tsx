@@ -34,7 +34,7 @@ export function ResetPasswordForm({ onBackToLogin }: { onBackToLogin: () => void
     let active = true;
 
     const handleUrl = async (url: string | null) => {
-      if (!url || (!url.includes('access_token=') && !url.includes('error_description='))) {
+      if (!url) {
         if (active) setRecoveryState('invalid');
         return;
       }

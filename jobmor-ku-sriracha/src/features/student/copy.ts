@@ -1,5 +1,6 @@
 export const studentCopy = {
   en: {
+    profileTooLong: 'Use up to 160 characters for your name and 20 for your phone.',
     savedJobs: 'Saved jobs', saveJob: 'Save job', unsave: 'Unsave job', saved: 'Saved', notApplied: 'Not applied',
     apply: 'Apply for job', applied: 'Application submitted.', withdraw: 'Withdraw application', withdrawn: 'Application withdrawn.',
     withdrawTitle: 'Withdraw this application?', withdrawBody: 'Your pending application will be removed. You can apply again while the job is active.',
@@ -15,6 +16,7 @@ export const studentCopy = {
     clearFilters: 'Clear filters', unavailable: 'Job no longer available',
   },
   th: {
+    profileTooLong: 'ชื่อยาวได้ไม่เกิน 160 ตัวอักษร และเบอร์โทรไม่เกิน 20 ตัวอักษร',
     savedJobs: 'งานที่บันทึกไว้', saveJob: 'บันทึกงาน', unsave: 'เลิกบันทึกงาน', saved: 'บันทึกแล้ว', notApplied: 'ยังไม่ได้สมัคร',
     apply: 'สมัครงาน', applied: 'ส่งใบสมัครแล้ว', withdraw: 'ถอนใบสมัคร', withdrawn: 'ถอนใบสมัครแล้ว',
     withdrawTitle: 'ถอนใบสมัครนี้?', withdrawBody: 'ใบสมัครที่รอพิจารณาจะถูกลบ คุณสมัครใหม่ได้หากงานยังเปิดรับอยู่',

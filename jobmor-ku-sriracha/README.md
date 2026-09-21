@@ -4,9 +4,9 @@ JobMor is a mobile job marketplace for Kasetsart University Sriracha students
 and local employers. It provides dedicated workspaces for students, employers,
 and platform administrators.
 
-The project is under active development. Authentication and the shared UI
-foundation are implemented, while most role-specific screens are visual
-prototypes awaiting their domain logic and Supabase CRUD flows.
+The project is under active development. Authentication, role guards, student
+job flows, and employer CRUD are implemented. Messaging and admin management
+screens remain prototypes.
 
 ## Project status
 
@@ -17,9 +17,10 @@ prototypes awaiting their domain logic and Supabase CRUD flows.
 | Email/password registration and sign-in | Implemented |
 | Supabase auth schema and RLS foundation | Implemented |
 | Password recovery | Web verified; Expo Go verification pending |
-| Session and role route guards | Planned |
-| Role-specific CRUD workflows | Planned |
-| Automated unit and end-to-end tests | Planned |
+| Session and role route guards | Implemented |
+| Student and employer CRUD workflows | Implemented |
+| Unit and PostgreSQL authorization tests | Implemented; run with `npm test` |
+| Native and hosted end-to-end tests | Pending |
 
 The role workspaces currently establish layout, navigation, and empty states.
 Search fields, filters, dashboards, applications, messages, reports, and other
@@ -76,6 +77,11 @@ npm run check
 ```
 
 Run `npm run check` before every push and pull request.
+
+`check` runs lint, TypeScript, and all Node test suites. SQL suites execute all
+migrations in an in-memory PostgreSQL instance (PGlite) with a minimal Auth schema.
+This verifies database constraints and RLS, but does not replace staging tests
+against hosted Supabase Auth or Android/iOS device checks.
 
 ## Project structure
 

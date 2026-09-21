@@ -7,6 +7,28 @@
 - The mobile app uses only the project URL and publishable key.
 - Apply every schema change through a new migration. Do not leave Dashboard-only changes undocumented.
 
+## Profile security rollout
+
+Migration `202609220001_profile_security.sql` enforces profile length limits and
+employer phone format even for direct REST writes, synchronizes confirmed Auth
+email changes, and rejects student email changes outside `@ku.th`. Suspended and
+pending accounts can read their own profile/application records but cannot edit
+profiles or perform verified-only job actions. Suspension is not a global Auth ban.
+
+New constraints use `NOT VALID`: existing records are preserved, while inserts
+and updates must satisfy the constraints. Before deployment, review legacy names
+over 160 characters, phones over 20 characters, malformed employer phones,
+company names over 160, categories over 100, and addresses over 1000. Correct
+records with their owners before validating constraints; do not silently truncate.
+Also check for existing Auth/profile email mismatches, since the new trigger
+synchronizes future changes only.
+
+Run `npm run check`, review `supabase db push --dry-run`, then apply the migration
+to staging and test actual email-change/confirmation flows before production.
+The app's native session storage now migrates to Expo SecureStore; rebuild native
+development/production binaries after adding this native module. Test login,
+restart, refresh, and logout on Android/iOS. Web continues using localStorage.
+
 ## Link the hosted development project
 
 ```bash

@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { canWithdraw, filterJobs, validateStudentProfile } from '../src/features/student/validation.ts';
 
-test('profile follows existing nonblank database constraints without invented fields', () => {
+test('profile follows database nonblank and length constraints', () => {
   assert.equal(validateStudentProfile({ display_name: 'นิสิต', phone: '0812345678' }), null);
   assert.equal(validateStudentProfile({ display_name: ' ', phone: '0812345678' }), 'required');
   assert.equal(validateStudentProfile({ display_name: 'นิสิต', phone: '\t' }), 'required');
-  assert.equal(validateStudentProfile({ display_name: 'A'.repeat(200), phone: '+66 (81) 234-5678' }), null);
+  assert.equal(validateStudentProfile({ display_name: 'A'.repeat(160), phone: '+66 (81) 234-5678' }), null);
+  assert.equal(validateStudentProfile({ display_name: 'A'.repeat(161), phone: '0812345678' }), 'profileTooLong');
+  assert.equal(validateStudentProfile({ display_name: 'Student', phone: '1'.repeat(21) }), 'profileTooLong');
 });
 test('only pending applications can be withdrawn', () => {
   assert.equal(canWithdraw('pending'), true);
