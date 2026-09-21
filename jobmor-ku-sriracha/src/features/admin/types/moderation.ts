@@ -7,6 +7,7 @@ export type TargetType = 'user' | 'job';
 export type UserAccountStatus = 'active' | 'suspended' | 'pending';
 export type ReportSeverity = 'low' | 'medium' | 'high';
 export type ReportCategory = 'fraud' | 'no_show' | 'inappropriate' | 'wage_dispute' | 'other';
+export type JobModerationStatus = 'active' | 'flagged' | 'taken_down' | 'closed';
 
 export interface ModerationMetric {
   id: string;
@@ -67,4 +68,21 @@ export interface ManagedUserItem {
   companyName?: string;
   category?: string;
   joinedAt: string;
+}
+
+export interface ModeratedJobItem {
+  id: string;
+  title: string;
+  companyName: string;
+  employerId: string;
+  wage: string;
+  location: string;
+  category: string;
+  jobType: string;
+  description: string;
+  postedAt: string;
+  moderationStatus: JobModerationStatus;
+  flagCount?: number;
+  flagReason?: string;
+  takedownReason?: string;
 }
