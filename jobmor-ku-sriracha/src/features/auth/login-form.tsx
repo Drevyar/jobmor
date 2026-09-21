@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { type Href, router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -73,6 +74,10 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
             </View>
           </View>
 
+          <Pressable onPress={() => router.push('/(auth)/forgot-password' as Href)} style={styles.forgotButton}>
+            <Text style={[styles.forgotText, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
+          </Pressable>
+
           {error ? <Text style={[styles.error, { color: colors.danger, backgroundColor: colors.surface }]}>{error}</Text> : null}
 
           <Pressable disabled={submitting} onPress={submit} style={[styles.primaryButton, { backgroundColor: colors.primary }, submitting && styles.disabled]}>
@@ -100,6 +105,8 @@ const styles = StyleSheet.create({
   field: { gap: 6 },
   label: { fontSize: 13, fontWeight: '700' },
   input: { minHeight: 50, borderWidth: 1, borderRadius: 15, paddingHorizontal: 14, fontSize: 15 },
+  forgotButton: { alignSelf: 'flex-end', paddingVertical: 10 },
+  forgotText: { fontSize: 13, fontWeight: '800' },
   error: { marginTop: 16, padding: 13, borderRadius: 13, fontSize: 12, lineHeight: 18 },
   primaryButton: { minHeight: 52, marginTop: 22, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   primaryButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
