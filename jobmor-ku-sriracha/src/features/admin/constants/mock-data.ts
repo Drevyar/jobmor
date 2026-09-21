@@ -1,4 +1,4 @@
-import type { VerificationQueueItem, ReportQueueItem, ManagedUserItem } from '../types/moderation';
+import type { VerificationQueueItem, ReportQueueItem, ManagedUserItem, DetailedReportItem } from '../types/moderation';
 
 export const MOCK_VERIFICATIONS: VerificationQueueItem[] = [
   {
@@ -48,6 +48,75 @@ export const MOCK_REPORTS: ReportQueueItem[] = [
     reason: 'รายละเอียดค่าจ้างไม่ตรงตามที่ประกาศไว้',
     createdAt: '2026-09-20T11:00:00Z',
     status: 'pending',
+  },
+];
+
+export const MOCK_DETAILED_REPORTS: DetailedReportItem[] = [
+  {
+    id: 'rep-01',
+    reporterName: 'นิสิต มก. นิรนาม',
+    reporterRole: 'student',
+    targetType: 'job',
+    targetName: 'งานคีย์ข้อมูล WFH รายได้วันละ 1,500 บาท',
+    targetDetails: 'ผู้ว่าจ้าง: บริษัท ดิจิทัลโปร โมบาย จำกัด',
+    category: 'fraud',
+    reason: 'มีการเรียกเก็บค่ามัดจำอุปกรณ์ก่อนเริ่มงาน เข้าข่ายหลอกลวง',
+    severity: 'high',
+    createdAt: '2026-09-21T15:10:00Z',
+    status: 'pending',
+  },
+  {
+    id: 'rep-02',
+    reporterName: 'ร้านกาแฟ KU Corner',
+    reporterRole: 'employer',
+    targetType: 'user',
+    targetName: 'สมหมาย แสนสุข (นิสิตชั้นปีที่ 2)',
+    targetDetails: 'รหัส: 653020088-1 • วิศวกรรมศาสตร์',
+    category: 'no_show',
+    reason: 'ยืนยันกะทำงานแล้วไม่มาปฏิบัติงานโดยไม่แจ้งล่วงหน้า ติดต่อไม่ได้',
+    severity: 'medium',
+    createdAt: '2026-09-21T14:20:00Z',
+    status: 'pending',
+  },
+  {
+    id: 'rep-03',
+    reporterName: 'นิสิต มก. ศรีราชา',
+    reporterRole: 'student',
+    targetType: 'job',
+    targetName: 'พนักงานแจกใบโบร์ชัวร์รายวัน ประตู 1',
+    targetDetails: 'ผู้ว่าจ้าง: เอเจนซี่อีเวนต์ พัทยา',
+    category: 'wage_dispute',
+    reason: 'ประกาศระบุค่าจ้างวันละ 500 บาท แต่จ่ายจริงเพียง 350 บาท',
+    severity: 'medium',
+    createdAt: '2026-09-20T11:00:00Z',
+    status: 'pending',
+  },
+  {
+    id: 'rep-04',
+    reporterName: 'ผู้ประกอบการ ย่านอ่าวอุดม',
+    reporterRole: 'employer',
+    targetType: 'user',
+    targetName: 'ผู้สมัครไม่ระบุตัวตน',
+    targetDetails: 'อีเมล: user994@gmail.com',
+    category: 'inappropriate',
+    reason: 'ส่งข้อความและรูปภาพที่ไม่เหมาะสมเข้ามาในช่องแชทประกาศงาน',
+    severity: 'low',
+    createdAt: '2026-09-19T18:30:00Z',
+    status: 'pending',
+  },
+  {
+    id: 'rep-05',
+    reporterName: 'แอดมินระบบอัตโนมัติ',
+    reporterRole: 'anonymous',
+    targetType: 'job',
+    targetName: 'ผู้ช่วยเสิร์ฟร้านชาบู',
+    targetDetails: 'ผู้ว่าจ้าง: ชาบูอินดี้ อ่าวอุดม',
+    category: 'other',
+    reason: 'ระบุตำแหน่งแผนที่ไม่ถูกต้อง (นอกเขตศรีราชา)',
+    severity: 'low',
+    createdAt: '2026-09-18T09:00:00Z',
+    status: 'resolved',
+    actionTaken: 'ปรับปรุงพิกัดแผนที่ให้ถูกต้องเรียบร้อยแล้ว',
   },
 ];
 

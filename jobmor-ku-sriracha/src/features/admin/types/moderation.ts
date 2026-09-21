@@ -5,6 +5,8 @@ export type VerificationStatus = 'pending' | 'verified' | 'rejected';
 export type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 export type TargetType = 'user' | 'job';
 export type UserAccountStatus = 'active' | 'suspended' | 'pending';
+export type ReportSeverity = 'low' | 'medium' | 'high';
+export type ReportCategory = 'fraud' | 'no_show' | 'inappropriate' | 'wage_dispute' | 'other';
 
 export interface ModerationMetric {
   id: string;
@@ -35,6 +37,21 @@ export interface ReportQueueItem {
   reason: string;
   createdAt: string;
   status: ReportStatus;
+}
+
+export interface DetailedReportItem {
+  id: string;
+  reporterName: string;
+  reporterRole?: 'student' | 'employer' | 'anonymous';
+  targetType: TargetType;
+  targetName: string;
+  targetDetails?: string;
+  category: ReportCategory;
+  reason: string;
+  severity: ReportSeverity;
+  createdAt: string;
+  status: ReportStatus;
+  actionTaken?: string;
 }
 
 export interface ManagedUserItem {
