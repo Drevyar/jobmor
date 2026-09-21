@@ -8,6 +8,7 @@ export type UserAccountStatus = 'active' | 'suspended' | 'pending';
 export type ReportSeverity = 'low' | 'medium' | 'high';
 export type ReportCategory = 'fraud' | 'no_show' | 'inappropriate' | 'wage_dispute' | 'other';
 export type JobModerationStatus = 'active' | 'flagged' | 'taken_down' | 'closed';
+export type AuditLogActionType = 'verify' | 'report' | 'job' | 'user' | 'system';
 
 export interface ModerationMetric {
   id: string;
@@ -85,4 +86,13 @@ export interface ModeratedJobItem {
   flagCount?: number;
   flagReason?: string;
   takedownReason?: string;
+}
+
+export interface AdminAuditLogItem {
+  id: string;
+  action: string;
+  target: string;
+  adminName: string;
+  timestamp: string;
+  type: AuditLogActionType;
 }

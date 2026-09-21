@@ -4,6 +4,7 @@ import type {
   ManagedUserItem,
   DetailedReportItem,
   ModeratedJobItem,
+  AdminAuditLogItem,
 } from '../types/moderation';
 
 export const MOCK_VERIFICATIONS: VerificationQueueItem[] = [
@@ -266,5 +267,48 @@ export const MOCK_MODERATED_JOBS: ModeratedJobItem[] = [
     postedAt: '2026-09-15',
     moderationStatus: 'taken_down',
     takedownReason: 'ละเมิดนโยบายความปลอดภัย (โฆษณาเว็บพนันออนไลน์)',
+  },
+];
+
+export const MOCK_AUDIT_LOGS: AdminAuditLogItem[] = [
+  {
+    id: 'log-01',
+    action: 'อนุมัติยืนยันสิทธิ์นิสิต มก.',
+    target: 'สมชาย ใจดี (653020012-3)',
+    adminName: 'Admin KU-01',
+    timestamp: '2026-09-21 21:30',
+    type: 'verify',
+  },
+  {
+    id: 'log-02',
+    action: 'ระงับประกาศงานหลอกลวง (WFH)',
+    target: 'บริษัท ดิจิทัลโปร โมบาย จำกัด',
+    adminName: 'Admin KU-01',
+    timestamp: '2026-09-21 19:45',
+    type: 'job',
+  },
+  {
+    id: 'log-03',
+    action: 'ดำเนินการเคสข้อร้องเรียน',
+    target: 'รายงานข้อพิพาทค่าจ้าง แจกใบปลิว',
+    adminName: 'Admin KU-02',
+    timestamp: '2026-09-20 14:15',
+    type: 'report',
+  },
+  {
+    id: 'log-04',
+    action: 'ระงับบัญชีผู้ใช้งานที่ละเมิดกฎ',
+    target: 'พงศกร สันติสุข (623050119-0)',
+    adminName: 'Admin KU-01',
+    timestamp: '2026-09-19 11:20',
+    type: 'user',
+  },
+  {
+    id: 'log-05',
+    action: 'ตรวจสอบระบบความปลอดภัย RLS',
+    target: 'Supabase Authorization Policies',
+    adminName: 'System Engine',
+    timestamp: '2026-09-18 08:00',
+    type: 'system',
   },
 ];
