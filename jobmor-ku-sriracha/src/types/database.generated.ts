@@ -14,6 +14,15 @@ export type Database = {
   }
   public: {
     Tables: {
+      saved_jobs: {
+        Row: { student_id: string; job_id: string; created_at: string }
+        Insert: { student_id: string; job_id: string; created_at?: string }
+        Update: { student_id?: string; job_id?: string; created_at?: string }
+        Relationships: [
+          { foreignKeyName: "saved_jobs_job_id_fkey"; columns: ["job_id"]; isOneToOne: false; referencedRelation: "jobs"; referencedColumns: ["id"] },
+          { foreignKeyName: "saved_jobs_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
       applications: {
         Row: {
           applicant_id: string
