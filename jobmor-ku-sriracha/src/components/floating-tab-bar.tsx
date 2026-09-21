@@ -32,8 +32,10 @@ function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBarProps)
   const [contentWidth, setContentWidth] = useState(0);
   const horizontalInset = Math.max(12, (width - 560) / 2);
   const visibleRoutes = state.routes.filter((route) => {
-    const options = descriptors[route.key].options as { href?: string | null };
-    return options.href !== null;
+    const { options } = descriptors[route.key];
+    // Expo Router converts href: null into a hidden tab item before descriptors
+    // reach this custom bar. Exclude it from both rendering and width calculations.
+    return StyleSheet.flatten(options.tabBarItemStyle)?.display !== 'none';
   });
   const activeRoute = state.routes[state.index];
   const activeIndex = visibleRoutes.findIndex((route) => route.key === activeRoute.key);
