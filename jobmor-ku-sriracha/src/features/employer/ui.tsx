@@ -45,11 +45,11 @@ export function Choices({ values, value, onChange, disabled }: { values: readonl
     <Text style={{ color: value === option ? colors.primary : colors.text }}>{t(option)}</Text>
   </Pressable>)}</View>;
 }
-export function DeleteDialog({ visible, busy, error, cancel, confirm }: { visible: boolean; busy: boolean; error: string; cancel: () => void; confirm: () => void }) {
+export function DeleteDialog({ visible, busy, error, cancel, confirm, title, body, confirmLabel, errorText }: { visible: boolean; busy: boolean; error: string; cancel: () => void; confirm: () => void; title?: string; body?: string; confirmLabel?: string; errorText?: string }) {
   const t = useEmployerText();
   return <Modal transparent visible={visible} animationType="fade" onRequestClose={() => { if (!busy) cancel(); }}>
-    <View style={styles.overlay}><View style={styles.dialog} accessibilityViewIsModal><Card><Copy strong>{t('deleteTitle')}</Copy><Copy>{t('deleteBody')}</Copy>
-      <Notice text={error ? t(error) : ''} error /><Button label={busy ? t('saving') : t('delete')} onPress={confirm} danger disabled={busy} />
+    <View style={styles.overlay}><View style={styles.dialog} accessibilityViewIsModal><Card><Copy strong>{title ?? t('deleteTitle')}</Copy><Copy>{body ?? t('deleteBody')}</Copy>
+      <Notice text={errorText ?? (error ? t(error) : '')} error /><Button label={busy ? t('saving') : confirmLabel ?? t('delete')} onPress={confirm} danger disabled={busy} />
       <Button label={t('cancel')} onPress={cancel} disabled={busy} /></Card></View></View>
   </Modal>;
 }

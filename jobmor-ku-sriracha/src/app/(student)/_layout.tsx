@@ -9,5 +9,7 @@ export default function StudentLayout() {
     <Tabs.Screen name="applications" options={optionsFor('applications')} />
     <Tabs.Screen name="messages" options={optionsFor('messages')} />
     <Tabs.Screen name="profile" options={optionsFor('profile')} />
+    <Tabs.Screen name="job-detail" options={{ href: null }} />
+    <Tabs.Screen name="saved-jobs" options={{ href: null }} />
   </Tabs>;
 }
