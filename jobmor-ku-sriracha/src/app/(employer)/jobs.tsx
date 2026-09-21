@@ -1,1 +1,1 @@
-import { FeatureScreen } from '@/components/feature-screen'; export default function JobsScreen() { return <FeatureScreen titleKey="employer.jobs" />; }
+export { default } from '@/features/employer/jobs-screen';

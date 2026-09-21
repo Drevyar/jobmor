@@ -10,5 +10,8 @@ export default function EmployerLayout() {
     <Tabs.Screen name="messages" options={optionsFor('messages')} />
     <Tabs.Screen name="profile" options={optionsFor('profile')} />
     <Tabs.Screen name="create-job" options={{ href: null }} />
+    <Tabs.Screen name="edit-job" options={{ href: null }} />
+    <Tabs.Screen name="job-detail" options={{ href: null }} />
+    <Tabs.Screen name="applicant-detail" options={{ href: null }} />
   </Tabs>;
 }
