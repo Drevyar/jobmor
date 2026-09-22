@@ -1,0 +1,14 @@
+diff --git a/node_modules/query-string/index.js b/node_modules/query-string/index.js
+index d45e67d..8e88827 100644
+--- a/node_modules/query-string/index.js
++++ b/node_modules/query-string/index.js
+@@ -1,6 +1,8 @@
+ 'use strict';
+ const strictUriEncode = require('strict-uri-encode');
+-const decodeComponent = require('decode-uri-component');
++// The patched decoder is ESM; preserve query-string 7's plus-as-space behavior.
++const decoder = require('decode-uri-component').default;
++const decodeComponent = value => decoder(value.replace(/\+/g, ' '));
+ const splitOnFirst = require('split-on-first');
+ const filterObject = require('filter-obj');
+ 

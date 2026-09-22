@@ -1,52 +1,71 @@
 # JobMor
 
-JobMor คือแอปหางานสำหรับนิสิตมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา และผู้ประกอบการในพื้นที่ repository นี้เป็น **UI foundation v0.1.0** สำหรับให้ทีมแยก branch พัฒนาเป็น feature ต่อไป
+JobMor is a mobile job marketplace for Kasetsart University Sriracha students
+and local employers. It provides dedicated workspaces for students, employers,
+and platform administrators.
 
-## สถานะปัจจุบัน
+The project is under active development. Authentication, role guards, student
+job flows, and employer CRUD are implemented. Messaging and admin management
+screens remain prototypes.
 
-ทำแล้ว:
+## Project status
 
-- Expo + React Native + TypeScript และ Expo Router
-- Navigation แยก Student, Employer และ Admin ตั้งแต่ต้น
-- UI shell อ้างอิงหน้าตาที่ทีมให้มา โดยยังไม่มี mock data
-- Bottom Tab Bar ใช้ Ionicons ไม่มี emoji
-- รองรับ light/dark mode ตามระบบ
-- โครงภาษาไทย/อังกฤษ เริ่มตามภาษาระบบและสลับดูได้จากหน้า UI
-- App icon, splash screen และ favicon ของ JobMor
-- GitHub Actions ตรวจ lint และ TypeScript ใน PR
+| Area | Status |
+| --- | --- |
+| Expo application and routing | Implemented |
+| Student, employer, and admin navigation | Implemented |
+| Email/password registration and sign-in | Implemented |
+| Supabase auth schema and RLS foundation | Implemented |
+| Password recovery | Web verified; Expo Go verification pending |
+| Session and role route guards | Implemented |
+| Student and employer CRUD workflows | Implemented |
+| Unit and PostgreSQL authorization tests | Implemented; run with `npm test` |
+| Native and hosted end-to-end tests | Pending |
 
-ยังไม่ทำ:
+The role workspaces currently establish layout, navigation, and empty states.
+Search fields, filters, dashboards, applications, messages, reports, and other
+controls do not imply completed business functionality unless their feature
+documentation explicitly says otherwise.
 
-- Login, session และ route guard
-- REST API, Supabase client และ PostgreSQL schema
-- ข้อมูลจริง, mock data และ business logic
-- Unit/E2E tests (ให้เพิ่มพร้อม feature ที่มี logic)
+## Technology
 
-หน้าแรกเป็น **Development Role Preview** เพื่อให้ทีมเปิดดู navigation ของแต่ละ role ได้ ไม่ใช่หน้า Login และไม่มี authentication logic
-
-## Tech stack
-
-| ส่วน | เทคโนโลยี |
-|---|---|
-| Mobile | Expo SDK 57, React Native 0.86 |
-| Language | TypeScript (strict mode) |
-| Navigation | Expo Router |
+| Area | Technology |
+| --- | --- |
+| Application | Expo SDK 57 and React Native 0.86 |
+| Language | TypeScript with strict mode |
+| Routing | Expo Router |
+| Authentication and data | Supabase |
+| Localization | `expo-localization` and `i18n-js` |
 | Icons | Ionicons |
-| Localization | expo-localization + i18n-js |
-| Backend (planned) | REST API + Supabase |
-| Database (planned) | PostgreSQL |
-| Repository / CI | GitHub + GitHub Actions |
+| CI | GitHub Actions |
 
-## เริ่มต้นใช้งาน
+## Getting started
 
-ต้องมี Node.js 22 LTS และ npm
+### Prerequisites
+
+- Node.js 22 LTS
+- npm
+- An Expo-compatible mobile environment or a modern web browser
+- Access to the team's Supabase development project
+
+### Installation
 
 ```bash
 npm install
+cp .env.example .env
+```
+
+Add the development project's Supabase URL and publishable key to `.env`. Never
+expose a service-role key, database password, access token, or third-party
+secret through an `EXPO_PUBLIC_*` variable.
+
+### Run the application
+
+```bash
 npm start
 ```
 
-คำสั่งที่ใช้บ่อย:
+Useful commands:
 
 ```bash
 npm run android
@@ -57,131 +76,127 @@ npm run typecheck
 npm run check
 ```
 
-ก่อน push ทุกครั้งให้รัน `npm run check`
+Run `npm run check` before every push and pull request.
 
-## โครงสร้างโปรเจกต์
+`check` runs lint, TypeScript, and all Node test suites. SQL suites execute all
+migrations in an in-memory PostgreSQL instance (PGlite) with a minimal Auth schema.
+This verifies database constraints and RLS, but does not replace staging tests
+against hosted Supabase Auth or Android/iOS device checks.
+
+## Project structure
 
 ```text
 src/
-├── app/                         # Route เท่านั้น ไม่ใส่ business logic หนัก
-│   ├── (auth)/                  # Role preview; พื้นที่ Login ในอนาคต
-│   ├── (student)/               # Student tabs
-│   ├── (employer)/              # Employer tabs + create-job
-│   └── (admin)/                 # Admin tabs
-├── components/                  # UI ที่ใช้ร่วมกันหลายหน้า/หลาย role
-├── constants/                   # Theme และ navigation configuration
-├── features/                    # งานของแต่ละทีม วาง component/hook/service/type ที่นี่
+├── app/                         # Expo Router routes and layouts
+│   ├── (auth)/                  # Public authentication routes
+│   ├── (student)/               # Student workspace routes
+│   ├── (employer)/              # Employer workspace routes
+│   └── (admin)/                 # Admin workspace routes
+├── components/                  # Shared presentation components
+├── constants/                   # Theme and role navigation configuration
+├── features/                    # Feature-owned UI, state, services, and types
 │   ├── auth/
 │   ├── student/
 │   ├── employer/
 │   └── admin/
-├── hooks/                       # Shared hooks
+├── hooks/                       # Cross-feature React hooks
+├── lib/                         # Infrastructure clients such as Supabase
 ├── localization/                # Translation dictionaries
-├── providers/                   # App-level React providers
-└── types/                       # Shared domain types เท่านั้น
+├── providers/                   # Application-level React providers
+└── types/                       # Shared domain types
+
+supabase/
+├── migrations/                  # Versioned schema, functions, and RLS
+├── seed.sql                     # Local development seed data
+├── config.toml                  # Local Supabase configuration
+└── README.md                    # Supabase operating procedures
 ```
 
-กติกาสำคัญ:
+## Architecture and ownership
 
-- Route ใน `src/app` ควรบาง ทำหน้าที่ประกอบ screen และ navigation
-- โค้ดเฉพาะ feature ให้อยู่ใน `src/features/<feature>` เพื่อลด merge conflict
-- ย้ายเข้า `src/components` เมื่อ component ถูกใช้จริงอย่างน้อยสอง feature
-- ห้ามใส่ Supabase service role key หรือ secret ในแอป
-- การซ่อน tab ไม่ใช่ authorization; backend และ Supabase RLS ต้องตรวจสิทธิ์เสมอ
+- Keep `src/app` files small. Routes should parse parameters, coordinate
+  navigation, and render a feature screen.
+- Put role-specific UI, hooks, validation, services, and types in the matching
+  `src/features/<role>` directory.
+- Move a component to `src/components` only when multiple features or roles
+  genuinely share it.
+- Keep Supabase queries out of presentation components. Place them in typed
+  feature services.
+- Implement every database change as a new migration. Do not rely on
+  undocumented Dashboard-only schema changes.
+- Enforce authorization with database policies or trusted backend code. A
+  hidden route, tab, or button is not a security boundary.
 
-## การแบ่งงานที่แนะนำ
+For example, employer job management should be organized as follows:
 
-| Branch | ขอบเขต |
-|---|---|
-| `feature/student-home` | Home และ job discovery |
-| `feature/student-applications` | Apply และติดตามใบสมัคร |
-| `feature/employer-jobs` | Create/edit/close job |
-| `feature/employer-applicants` | ตรวจและอัปเดตผู้สมัคร |
-| `feature/admin-moderation` | Users, reports และ verification |
-| `feature/messaging` | Conversation และ realtime messages |
-| `feature/api-client` | REST client, error model และ environment config |
-| `feature/auth` | ทำท้ายสุดหลัง role/RLS ชัดเจน |
+```text
+src/app/(employer)/jobs.tsx
+src/features/employer/job-list.tsx
+src/features/employer/job-form.tsx
+src/features/employer/job-service.ts
+src/features/employer/types.ts
+supabase/migrations/<timestamp>_jobs.sql
+```
 
-หนึ่ง branch ควรมีเจ้าของหลักหนึ่งคน และไม่รวมหลาย feature ที่ไม่เกี่ยวกัน
+Each data-backed feature must provide loading, empty, success, validation, and
+error states. Create, update, and delete operations must be tested with the
+intended student, employer, and admin permissions.
+
+## Supabase development
+
+Database setup, migration conventions, password-recovery redirects, and admin
+account creation are documented in [`supabase/README.md`](./supabase/README.md).
+
+Commit migrations, `config.toml`, and generated public types. Never commit
+database credentials, user passwords, service-role keys, or access tokens.
 
 ## Git workflow
 
-ใช้เส้นทาง `feature/* → develop → main`
+Development follows:
+
+```text
+feature/* -> develop -> main
+```
+
+Start every feature from the latest `develop` branch:
 
 ```bash
 git switch develop
 git pull origin develop
-git switch -c feature/student-home
+git switch -c feature/employer-jobs
 ```
 
-### ควร commit ตอนไหน
+Create focused, buildable commits and use Conventional Commit prefixes such as
+`feat`, `fix`, `refactor`, `test`, `docs`, and `chore`. Do not combine unrelated
+features in one branch or pull request.
 
-อย่ารอให้ feature เสร็จทั้งหมด ให้ commit เมื่อได้ “หน่วยงานที่อธิบายได้และยัง build ผ่าน” เช่น:
-
-1. วาง route/type/interface ที่จำเป็น
-   `git commit -m "feat(student): scaffold home route"`
-2. ทำ UI component ชุดแรกเสร็จ
-   `git commit -m "feat(student): add job search header"`
-3. ทำ empty/loading/error state
-   `git commit -m "feat(student): handle job list states"`
-4. เชื่อม API หรือ state management
-   `git commit -m "feat(student): connect jobs endpoint"`
-5. เพิ่ม test และแก้ lint/type
-   `git commit -m "test(student): cover job filtering"`
-6. ปรับเอกสารหรือ refactor แยกเป็น commit ของตัวเอง
-   `git commit -m "docs(student): document jobs contract"`
-
-หลักง่าย ๆ: commit ทุกครั้งก่อนเปลี่ยนไปทำ concern ใหม่, ก่อน refactor ใหญ่, และก่อนหยุดงาน/ส่งต่อ แต่ไม่ commit โค้ดที่ typecheck ไม่ผ่าน
-
-ใช้ Conventional Commits:
-
-- `feat:` ความสามารถใหม่
-- `fix:` แก้ bug
-- `refactor:` ปรับโครงโดย behavior เดิม
-- `docs:` เอกสาร
-- `test:` test
-- `chore:` tooling/dependency/CI
-
-เมื่อพร้อมส่งงาน:
+Before opening a pull request:
 
 ```bash
 npm run check
-git push -u origin feature/student-home
+git push -u origin feature/employer-jobs
 ```
 
-เปิด Pull Request เข้า `develop`, ให้เพื่อน review อย่างน้อยหนึ่งคน และ merge เมื่อ CI ผ่านเท่านั้น ห้าม push ตรงเข้า `main` หรือ `develop` ส่วน `main` ใช้เฉพาะ release ที่ผ่านการทดสอบจาก `develop`
+Open pull requests against `develop`. Merge only after CI passes and a teammate
+has reviewed the change. The `main` branch is reserved for tested releases
+promoted from `develop`.
+
+## Testing expectations
+
+Each feature owner is responsible for:
+
+- lint and TypeScript checks;
+- validation, loading, empty, and failure states;
+- light and dark theme review;
+- web and Expo/native review when platform behavior differs;
+- permission testing for every affected role;
+- regression checks for authentication and navigation.
 
 ## Versioning
 
-โปรเจกต์ใช้ [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
-
-- `0.1.0` — UI foundation ปัจจุบัน
-- เพิ่ม `PATCH` เมื่อแก้ bug โดย API/behavior เดิม เช่น `0.1.1`
-- เพิ่ม `MINOR` เมื่อเพิ่ม feature ที่ backward-compatible เช่น `0.2.0`
-- เริ่ม `1.0.0` เมื่อ flow หลักพร้อม production และ contract เสถียร
-- เพิ่ม `MAJOR` หลัง 1.0 เมื่อมี breaking change
-
-ตอน release ให้แก้เวอร์ชันใน `package.json` และ `app.json` ให้ตรงกัน จากนั้น merge เข้า `main` และสร้าง tag:
-
-```bash
-git tag -a v0.1.0 -m "JobMor UI foundation"
-git push origin v0.1.0
-```
-
-## Environment และ backend ในอนาคต
-
-คัดลอก `.env.example` เป็น `.env` เมื่อเริ่มเชื่อม Supabase:
-
-```bash
-cp .env.example .env
-```
-
-ใช้เฉพาะ public URL/publishable key ฝั่งแอป ส่วน secret และงานที่ต้องใช้สิทธิ์สูงให้อยู่ใน backend เท่านั้น ก่อนเริ่ม API/Auth ทีมควรตกลง REST contract, PostgreSQL schema, role claims และ RLS policies ร่วมกันก่อน
-
-## CI
-
-GitHub Actions จะทำงานเมื่อ push หรือเปิด PR เข้า `develop`/`main` โดยรัน `npm ci` และ `npm run check` หาก CI ไม่ผ่านให้แก้ใน feature branch เดิม ห้าม bypass ด้วยการปิด lint หรือ TypeScript strict mode
+JobMor follows Semantic Versioning. Keep `package.json` and `app.json` aligned
+when preparing a release.
 
 ## License
 
-MIT — ดู [LICENSE](./LICENSE)
+MIT. See [`LICENSE`](./LICENSE).

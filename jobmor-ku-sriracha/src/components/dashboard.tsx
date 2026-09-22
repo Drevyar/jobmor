@@ -1,18 +1,19 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { ReactNode } from 'react';
 
 import { EmptySection, Screen } from '@/components/screen';
 import type { IconName } from '@/constants/roles';
 import { useTheme } from '@/hooks/use-theme';
 
-type Metric = { label: string; icon: IconName };
-export function Dashboard({ title, subtitle, metrics, sectionTitle, actionLabel, onAction }: { title: string; subtitle: string; metrics: Metric[]; sectionTitle: string; actionLabel?: string; onAction?: () => void }) {
+type Metric = { label: string; icon: IconName; value?: number };
+export function Dashboard({ title, subtitle, metrics, sectionTitle, actionLabel, onAction, children }: { title: string; subtitle: string; metrics: Metric[]; sectionTitle: string; actionLabel?: string; onAction?: () => void; children?: ReactNode }) {
   const colors = useTheme();
   return (
     <Screen title={title} subtitle={subtitle}>
-      <View style={styles.grid}>{metrics.map((metric) => <View key={metric.label} style={[styles.metric, { backgroundColor: colors.surface, borderColor: colors.border }]}><View style={[styles.metricIcon, { backgroundColor: colors.primarySoft }]}><Ionicons name={metric.icon} size={20} color={colors.primary} /></View><View><Text style={[styles.metricValue, { color: colors.text }]}>—</Text><Text style={[styles.metricLabel, { color: colors.textMuted }]}>{metric.label}</Text></View></View>)}</View>
-      {actionLabel ? <Pressable onPress={onAction} style={[styles.action, { backgroundColor: colors.primary }]}><Ionicons name="add" size={22} color="#FFFFFF" /><Text style={styles.actionText}>{actionLabel}</Text></Pressable> : null}
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{sectionTitle}</Text><EmptySection />
+      <View style={styles.grid}>{metrics.map((metric) => <View key={metric.label} style={[styles.metric, { backgroundColor: colors.surface, borderColor: colors.border }]}><View style={[styles.metricIcon, { backgroundColor: colors.primarySoft }]}><Ionicons name={metric.icon} size={20} color={colors.primary} /></View><View><Text style={[styles.metricValue, { color: colors.text }]}>{metric.value ?? '—'}</Text><Text style={[styles.metricLabel, { color: colors.textMuted }]}>{metric.label}</Text></View></View>)}</View>
+      {actionLabel ? <Pressable onPress={onAction} style={[styles.action, { backgroundColor: colors.primary }]}><Ionicons name="add" size={22} color={colors.onPrimary} /><Text style={[styles.actionText, { color: colors.onPrimary }]}>{actionLabel}</Text></Pressable> : null}
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>{sectionTitle}</Text>{children ?? <EmptySection />}
     </Screen>
   );
 }
