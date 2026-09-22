@@ -74,7 +74,7 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
             </View>
           </View>
 
-          <Pressable onPress={() => router.push('/(auth)/forgot-password' as Href)} style={styles.forgotButton}>
+          <Pressable onPress={() => router.push('/forgot-password' as Href)} style={styles.forgotButton}>
             <Text style={[styles.forgotText, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
           </Pressable>
 
