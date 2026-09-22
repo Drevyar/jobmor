@@ -78,6 +78,35 @@ When testing Expo Go, the phone must be able to reach the Metro development host
 access is unavailable, start Expo with `npx expo start --tunnel`, then add the exact generated
 callback URL to the hosted Supabase redirect allow-list for that test session.
 
+### Android Emulator + Expo Go: email opens localhost:3000
+
+`npm start` starts Expo/Metro; it does not start a web server on port 3000.
+If a recovery email lands on `http://localhost:3000/#access_token=...`, it has
+not reached the reset-password screen. Check the hosted project's redirect
+allow-list and email template; editing this repository's `config.toml` or running
+`supabase db push` does not update hosted Auth URL settings.
+
+1. In the hosted Dashboard, open **Authentication > URL Configuration**. Add
+   the exact Expo Go callback `exp://<host-and-port-from-Expo>/--/reset-password`
+   to Redirect URLs (or `exp://**` temporarily in a development project).
+2. Under **Authentication > Email Templates > Reset Password**, retain the
+   standard `{{ .ConfirmationURL }}` verification link. A customized template
+   must preserve the requested redirect, rather than hard-code `.SiteURL` or
+   `localhost:3000`.
+3. Request a fresh recovery email from the app after saving the settings.
+   Previously generated links retain their old destination and may be expired
+   or already consumed.
+4. Open that email link in the **emulator's browser**, where Expo Go is installed.
+   Clicking it in Windows Edge cannot launch the emulator's Expo Go app.
+5. Verify the app opens `/reset-password`, submit a new password, then confirm
+   the new password signs in and the old password fails. Also check expired
+   links and both a running app and a cold launch.
+
+The UI keeps recovery mounted while Supabase loads the profile, avoiding repeated
+token/code consumption on auth events. Local regression checks:
+`node --test scripts/test-password-recovery.mjs` and `npm run check`.
+These mocked checks do not replace the email-to-emulator end-to-end test above.
+
 ## Create the single development admin
 
 Apply migrations first. Set these values only in the current terminal session, then run the script. Do not save the service-role key in `.env` used by Expo.

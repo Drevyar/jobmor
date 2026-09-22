@@ -34,12 +34,14 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const isRecoveryRoute = segments[0] === '(auth)' && segments[1] === 'reset-password';
 
   useEffect(() => {
-    if (fontsReady && !isLoading) void SplashScreen.hideAsync();
-  }, [fontsReady, isLoading]);
+    if (fontsReady && (!isLoading || isRecoveryRoute)) void SplashScreen.hideAsync();
+  }, [fontsReady, isLoading, isRecoveryRoute]);
 
-  if (!fontsReady || isLoading) return null;
+  // Recovery establishes a session itself. Keep its form mounted while the
+  // auth provider loads the profile, otherwise it consumes the link again.
+  if (!fontsReady || (isLoading && !isRecoveryRoute)) return null;
 
-  if (error) {
+  if (error && !isRecoveryRoute) {
     return (
       <View style={[styles.errorScreen, { backgroundColor: colors.background }]}>
         <Ionicons name="cloud-offline-outline" size={42} color={colors.danger} />

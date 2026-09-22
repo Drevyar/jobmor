@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -29,6 +29,7 @@ export function ResetPasswordForm({ onBackToLogin }: { onBackToLogin: () => void
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const incomingUrl = Linking.useLinkingURL();
+  const recoveryRequest = useRef<{ url: string; promise: Promise<void> } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -40,7 +41,16 @@ export function ResetPasswordForm({ onBackToLogin }: { onBackToLogin: () => void
       }
 
       try {
-        await createRecoverySessionFromUrl(url);
+        // Let the service validate both implicit tokens and PKCE codes.
+        // Reuse the request if effects run twice; PKCE codes are single-use.
+        if (recoveryRequest.current?.url !== url) {
+          setRecoveryState('checking');
+          setError('');
+          setPassword('');
+          setConfirmPassword('');
+          recoveryRequest.current = { url, promise: createRecoverySessionFromUrl(url) };
+        }
+        await recoveryRequest.current.promise;
         if (active) setRecoveryState('ready');
       } catch {
         if (active) setRecoveryState('invalid');
