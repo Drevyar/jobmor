@@ -63,10 +63,10 @@ export function AdminUsersScreen() {
       prev.map((u) =>
         u.id === id
           ? {
-              ...u,
-              verificationStatus: 'verified',
-              accountStatus: 'active',
-            }
+            ...u,
+            verificationStatus: 'verified',
+            accountStatus: 'active',
+          }
           : u
       )
     );
@@ -77,10 +77,10 @@ export function AdminUsersScreen() {
       prev.map((u) =>
         u.id === id
           ? {
-              ...u,
-              verificationStatus: 'rejected',
-              accountStatus: 'suspended',
-            }
+            ...u,
+            verificationStatus: 'rejected',
+            accountStatus: 'suspended',
+          }
           : u
       )
     );
@@ -250,8 +250,8 @@ export function AdminUsersScreen() {
                     {isSuspended
                       ? t('admin.suspendedStatus')
                       : isPending
-                      ? t('admin.pendingStatus')
-                      : t('admin.activeStatus')}
+                        ? t('admin.pendingStatus')
+                        : t('admin.activeStatus')}
                   </Text>
                 </View>
               </View>
