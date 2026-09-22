@@ -21,7 +21,7 @@ export default function AuthCallbackScreen() {
         <Pressable
           onPress={() => router.replace('/')}
           style={[styles.button, { backgroundColor: colors.primary }]}>
-          <Text style={styles.buttonText}>{t('auth.backHome')}</Text>
+          <Text style={[styles.buttonText, { color: colors.onPrimary }]}>{t('auth.backHome')}</Text>
         </Pressable>
       </View>
     </SafeAreaView>

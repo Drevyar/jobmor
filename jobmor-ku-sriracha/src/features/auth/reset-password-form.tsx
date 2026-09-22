@@ -101,7 +101,7 @@ export function ResetPasswordForm({ onBackToLogin }: { onBackToLogin: () => void
           <Text style={[styles.title, { color: colors.text }]}>{t(complete ? 'auth.passwordUpdated' : 'auth.invalidResetLink')}</Text>
           <Text style={[styles.hint, { color: colors.textMuted }]}>{t(complete ? 'auth.passwordUpdatedBody' : 'auth.invalidResetLinkBody')}</Text>
           <Pressable onPress={onBackToLogin} style={[styles.primaryButton, { backgroundColor: colors.primary }]}>
-            <Text style={styles.primaryButtonText}>{t('auth.backToLogin')}</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t('auth.backToLogin')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -131,8 +131,8 @@ export function ResetPasswordForm({ onBackToLogin }: { onBackToLogin: () => void
           </View>
 
           <Pressable disabled={submitting} onPress={submit} style={[styles.primaryButton, { backgroundColor: colors.primary }, submitting && styles.disabled]}>
-            {submitting ? <ActivityIndicator color="#FFFFFF" /> : <Ionicons name="shield-checkmark-outline" size={19} color="#FFFFFF" />}
-            <Text style={styles.primaryButtonText}>{t(submitting ? 'auth.updatingPassword' : 'auth.updatePassword')}</Text>
+            {submitting ? <ActivityIndicator color={colors.onPrimary} /> : <Ionicons name="shield-checkmark-outline" size={19} color={colors.onPrimary} />}
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t(submitting ? 'auth.updatingPassword' : 'auth.updatePassword')}</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>

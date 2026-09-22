@@ -106,7 +106,7 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
           <Text style={[styles.successBody, { color: colors.textMuted }]}>{t('auth.checkEmailBody')}</Text>
           <Text style={[styles.successEmail, { color: colors.primary }]}>{registeredEmail}</Text>
           <Pressable onPress={onBack} style={[styles.primaryButton, { backgroundColor: colors.primary }]}>
-            <Text style={styles.primaryButtonText}>{t('auth.backHome')}</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t('auth.backHome')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -172,8 +172,8 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
           {submitError ? <Text style={[styles.submitError, { color: colors.danger, backgroundColor: colors.surface }]}>{submitError}</Text> : null}
 
           <Pressable disabled={submitting} onPress={submit} style={[styles.primaryButton, { backgroundColor: colors.primary }, submitting && styles.disabled]}>
-            {submitting ? <ActivityIndicator color="#FFFFFF" /> : <Ionicons name="person-add-outline" size={19} color="#FFFFFF" />}
-            <Text style={styles.primaryButtonText}>{t(submitting ? 'auth.submitting' : 'auth.submit')}</Text>
+            {submitting ? <ActivityIndicator color={colors.onPrimary} /> : <Ionicons name="person-add-outline" size={19} color={colors.onPrimary} />}
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t(submitting ? 'auth.submitting' : 'auth.submit')}</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>

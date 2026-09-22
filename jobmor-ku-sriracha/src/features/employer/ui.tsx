@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/providers/localization-provider';
@@ -15,11 +15,19 @@ export function Card({ children }: PropsWithChildren) {
   const colors = useTheme();
   return <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>{children}</View>;
 }
-export function Button({ label, onPress, disabled, danger = false }: { label: string; onPress: () => void; disabled?: boolean; danger?: boolean }) {
+export function Button({ label, onPress, disabled, danger = false, variant = 'secondary', selected }: { label: string; onPress: () => void; disabled?: boolean; danger?: boolean; variant?: 'primary' | 'secondary' | 'ghost'; selected?: boolean }) {
   const colors = useTheme();
-  return <Pressable accessibilityRole="button" accessibilityState={{ disabled: !!disabled }} disabled={disabled} onPress={onPress}
-    style={[styles.button, { backgroundColor: colors.surface, borderColor: danger ? colors.danger : colors.primary, opacity: disabled ? 0.5 : 1 }]}>
-    <Text style={{ color: danger ? colors.danger : colors.primary, fontWeight: '700' }}>{label}</Text>
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const filled = variant === 'primary' && !danger;
+  return <Pressable accessibilityRole="button" accessibilityState={{ disabled: !!disabled, ...(selected === undefined ? {} : { selected }) }} disabled={disabled} onPress={onPress}
+    onHoverIn={() => setHovered(true)} onHoverOut={() => setHovered(false)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+    style={({ pressed }) => [styles.button, {
+      backgroundColor: filled ? colors.primary : (hovered || pressed || selected) && !disabled ? colors.primarySoft : variant === 'ghost' ? 'transparent' : colors.surface,
+      borderColor: focused ? colors.text : danger ? colors.danger : variant === 'ghost' ? 'transparent' : filled || selected ? colors.primary : colors.border,
+      borderWidth: focused ? 2 : 1, opacity: disabled ? 0.5 : pressed ? 0.8 : 1,
+    }]}>
+    <Text style={{ color: danger ? colors.danger : filled ? colors.onPrimary : colors.primary, fontSize: 14, fontWeight: '700', textAlign: 'center' }}>{label}</Text>
   </Pressable>;
 }
 export function Notice({ text, error = false }: { text: string; error?: boolean }) {
@@ -34,9 +42,11 @@ export function Field({ label, value, onChange, multiline, numeric, maxLength, d
   label: string; value: string; onChange: (value: string) => void; multiline?: boolean; numeric?: boolean; maxLength?: number; disabled?: boolean;
 }) {
   const colors = useTheme();
+  const [focused, setFocused] = useState(false);
   return <View style={styles.field}><Copy>{label}</Copy><TextInput accessibilityLabel={label} value={value} onChangeText={onChange}
     editable={!disabled} multiline={multiline} maxLength={maxLength} keyboardType={numeric ? 'decimal-pad' : 'default'}
-    style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }, multiline && { minHeight: 110, textAlignVertical: 'top' }]} /></View>;
+    onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+    style={[styles.input, { color: colors.text, borderColor: focused ? colors.primary : colors.border, backgroundColor: disabled ? colors.surfaceMuted : colors.surface }, multiline && { minHeight: 110, textAlignVertical: 'top' }]} /></View>;
 }
 export function Choices({ values, value, onChange, disabled }: { values: readonly string[]; value: string; onChange: (value: string) => void; disabled?: boolean }) {
   const t = useEmployerText(); const colors = useTheme();
@@ -54,8 +64,8 @@ export function DeleteDialog({ visible, busy, error, cancel, confirm, title, bod
   </Modal>;
 }
 export const styles = StyleSheet.create({
-  card: { padding: 20, borderWidth: 1, borderRadius: 20, gap: 12 },
-  button: { minHeight: 44, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 10, alignItems: 'center', justifyContent: 'center' },
+  card: { padding: 20, borderWidth: 1, borderRadius: 18, gap: 14 },
+  button: { minHeight: 44, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, field: { gap: 7 },
   input: { minHeight: 48, borderWidth: 1, borderRadius: 14, padding: 14 },
   overlay: { flex: 1, backgroundColor: '#00000080', justifyContent: 'center', alignItems: 'center', padding: 20 },

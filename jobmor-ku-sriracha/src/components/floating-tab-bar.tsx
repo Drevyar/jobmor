@@ -2,10 +2,12 @@ import { Tabs } from 'expo-router';
 import { type ComponentProps, useEffect, useState } from 'react';
 import {
   Animated,
+  AccessibilityInfo,
   Easing,
   Platform,
   Pressable,
   StyleSheet,
+  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -16,8 +18,7 @@ import { useTheme } from '@/hooks/use-theme';
 type TabsProps = ComponentProps<typeof Tabs>;
 type FloatingTabBarProps = Parameters<NonNullable<TabsProps['tabBar']>>[0];
 
-const BAR_HEIGHT = 58;
-const INDICATOR_SIZE = 42;
+const BAR_HEIGHT = 76;
 const ANIMATION_DURATION = 240;
 
 export function renderFloatingTabBar(props: FloatingTabBarProps) {
@@ -30,6 +31,9 @@ function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBarProps)
   const { width } = useWindowDimensions();
   const [progress] = useState(() => new Animated.Value(0));
   const [contentWidth, setContentWidth] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(true);
+  const [highlighted, setHighlighted] = useState<string | null>(null);
+  const [keyboardFocused, setKeyboardFocused] = useState<string | null>(null);
   const horizontalInset = Math.max(12, (width - 560) / 2);
   const visibleRoutes = state.routes.filter((route) => {
     const { options } = descriptors[route.key];
@@ -42,15 +46,22 @@ function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBarProps)
   const itemWidth = visibleRoutes.length ? contentWidth / visibleRoutes.length : 0;
 
   useEffect(() => {
+    let active = true;
+    void AccessibilityInfo.isReduceMotionEnabled().then(value => { if (active) setReduceMotion(value); });
+    const listener = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+    return () => { active = false; listener.remove(); };
+  }, []);
+
+  useEffect(() => {
     if (activeIndex < 0) return;
 
     Animated.timing(progress, {
       toValue: activeIndex,
-      duration: ANIMATION_DURATION,
+      duration: reduceMotion ? 0 : ANIMATION_DURATION,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: Platform.OS !== 'web',
     }).start();
-  }, [activeIndex, progress]);
+  }, [activeIndex, progress, reduceMotion]);
 
   return (
     <View
@@ -84,7 +95,8 @@ function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBarProps)
             style={[
               styles.indicator,
               {
-                left: (itemWidth - INDICATOR_SIZE) / 2,
+                left: 3,
+                width: Math.max(0, itemWidth - 6),
                 backgroundColor: colors.primarySoft,
                 transform: [{ translateX: Animated.multiply(progress, itemWidth) }],
               },
@@ -122,13 +134,18 @@ function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBarProps)
               accessibilityState={focused ? { selected: true } : {}}
               onPress={onPress}
               onLongPress={onLongPress}
-              style={styles.item}
+              onHoverIn={() => setHighlighted(route.key)}
+              onHoverOut={() => setHighlighted(null)}
+              onFocus={() => setKeyboardFocused(route.key)}
+              onBlur={() => setKeyboardFocused(null)}
+              style={({ pressed }) => [styles.item, { backgroundColor: pressed || highlighted === route.key ? colors.primarySoft : 'transparent', borderColor: keyboardFocused === route.key ? colors.primary : 'transparent' }]}
             >
               {options.tabBarIcon?.({
                 focused,
                 color: focused ? colors.primary : colors.textMuted,
-                size: 24,
+                size: 22,
               })}
+              <Text numberOfLines={1} style={[styles.label, { color: focused ? colors.primary : colors.textMuted, fontWeight: focused ? '700' : '500' }]}>{label}</Text>
             </Pressable>
           );
         })}
@@ -153,15 +170,19 @@ const styles = StyleSheet.create({
   indicator: {
     position: 'absolute',
     pointerEvents: 'none',
-    top: 2,
-    width: INDICATOR_SIZE,
-    height: INDICATOR_SIZE,
-    borderRadius: INDICATOR_SIZE / 2,
+    top: 0,
+    bottom: 0,
+    borderRadius: 16,
   },
   item: {
     flex: 1,
     zIndex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
+    borderWidth: 1,
+    borderRadius: 16,
+    minWidth: 0,
   },
+  label: { fontSize: 11, lineHeight: 16, maxWidth: '100%' },
 });

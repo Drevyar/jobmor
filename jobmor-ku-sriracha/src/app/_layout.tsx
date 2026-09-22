@@ -46,7 +46,7 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
         <Text style={[styles.errorTitle, { color: colors.text }]}>{t('auth.sessionLoadFailed')}</Text>
         <Text style={[styles.errorBody, { color: colors.textMuted }]}>{error}</Text>
         <Pressable onPress={retry} style={[styles.retryButton, { backgroundColor: colors.primary }]}>
-          <Text style={styles.retryText}>{t('auth.tryAgain')}</Text>
+          <Text style={[styles.retryText, { color: colors.onPrimary }]}>{t('auth.tryAgain')}</Text>
         </Pressable>
       </View>
     );

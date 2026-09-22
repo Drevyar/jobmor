@@ -81,8 +81,8 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
           {error ? <Text style={[styles.error, { color: colors.danger, backgroundColor: colors.surface }]}>{error}</Text> : null}
 
           <Pressable disabled={submitting} onPress={submit} style={[styles.primaryButton, { backgroundColor: colors.primary }, submitting && styles.disabled]}>
-            {submitting ? <ActivityIndicator color="#FFFFFF" /> : <Ionicons name="log-in-outline" size={20} color="#FFFFFF" />}
-            <Text style={styles.primaryButtonText}>{t(submitting ? 'auth.loggingIn' : 'auth.login')}</Text>
+            {submitting ? <ActivityIndicator color={colors.onPrimary} /> : <Ionicons name="log-in-outline" size={20} color={colors.onPrimary} />}
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t(submitting ? 'auth.loggingIn' : 'auth.login')}</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>

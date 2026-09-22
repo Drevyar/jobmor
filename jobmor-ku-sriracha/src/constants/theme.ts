@@ -17,6 +17,7 @@
 export const Colors = {
   light: {
     primary: '#08785A',
+    onPrimary: '#FFFFFF',
     primaryStrong: '#07543D',
     primarySoft: '#E8F7F1',
     background: '#F7FAF9',
@@ -29,6 +30,7 @@ export const Colors = {
   },
   dark: {
     primary: '#5BD4AD',
+    onPrimary: '#08130F',
     primaryStrong: '#8BE7C8',
     primarySoft: '#153E32',
     background: '#08130F',

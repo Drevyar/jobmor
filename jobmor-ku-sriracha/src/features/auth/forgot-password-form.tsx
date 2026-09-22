@@ -76,7 +76,7 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
           <Text style={[styles.title, { color: colors.text }]}>{t('auth.resetEmailSent')}</Text>
           <Text style={[styles.hint, { color: colors.textMuted }]}>{t('auth.resetEmailSentBody')}</Text>
           <Pressable onPress={onBack} style={[styles.primaryButton, { backgroundColor: colors.primary }]}>
-            <Text style={styles.primaryButtonText}>{t('auth.backToLogin')}</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t('auth.backToLogin')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -118,8 +118,8 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
           </View>
 
           <Pressable disabled={submitting} onPress={submit} style={[styles.primaryButton, { backgroundColor: colors.primary }, submitting && styles.disabled]}>
-            {submitting ? <ActivityIndicator color="#FFFFFF" /> : <Ionicons name="send-outline" size={19} color="#FFFFFF" />}
-            <Text style={styles.primaryButtonText}>{t(submitting ? 'auth.sendingResetEmail' : 'auth.sendResetEmail')}</Text>
+            {submitting ? <ActivityIndicator color={colors.onPrimary} /> : <Ionicons name="send-outline" size={19} color={colors.onPrimary} />}
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t(submitting ? 'auth.sendingResetEmail' : 'auth.sendResetEmail')}</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
