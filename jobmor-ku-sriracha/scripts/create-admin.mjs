@@ -32,7 +32,7 @@ const { data, error: createError } = await supabase.auth.admin.createUser({
   user_metadata: {
     role: 'employer',
     display_name: 'JobMor Admin',
-    phone: '-',
+    phone: '0000000000',
     company_name: 'JobMor',
     business_category: 'Platform Administration',
     address: 'KU Sriracha',
