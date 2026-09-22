@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { type Href, router } from 'expo-router';
+import { type Href, Link, router } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -31,12 +31,13 @@ export default function RolePreviewScreen() {
         <Text style={[styles.brand, { color: colors.text }]}>JobMor</Text>
 
         {/* Sign In Button */}
-        <Pressable
-          onPress={() => router.push('/login' as Href)}
-          style={[styles.loginButton, { backgroundColor: colors.primary }]}>
-          <Ionicons name="log-in-outline" size={20} color={colors.onPrimary} />
-          <Text style={[styles.loginButtonText, { color: colors.onPrimary }]}>{t('auth.login')}</Text>
-        </Pressable>
+        <Link href={'/(auth)/login' as Href} asChild>
+          <Pressable
+            style={StyleSheet.flatten([styles.loginButton, { backgroundColor: colors.primary }])}>
+            <Ionicons name="log-in-outline" size={20} color={colors.onPrimary} />
+            <Text style={[styles.loginButtonText, { color: colors.onPrimary }]}>{t('auth.login')}</Text>
+          </Pressable>
+        </Link>
 
         <View style={styles.dividerRow}>
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -52,22 +53,22 @@ export default function RolePreviewScreen() {
           {(['student', 'employer'] as RegistrationRole[]).map((role) => {
             const config = ROLE_CONFIGS[role];
             return (
-              <Pressable
-                key={role}
-                onPress={() => router.push(`/register?role=${role}` as Href)}
-                style={[
-                  styles.roleCard,
-                  { backgroundColor: colors.surface, borderColor: colors.border },
-                ]}>
-                <View style={[styles.roleIcon, { backgroundColor: colors.primarySoft }]}>
-                  <Ionicons name={config.icon} size={27} color={colors.primary} />
-                </View>
-                <View style={styles.roleCopy}>
-                  <Text style={[styles.roleTitle, { color: colors.text }]}>{t(config.labelKey)}</Text>
-                  <Text style={[styles.roleBody, { color: colors.textMuted }]}>{t(config.descriptionKey)}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-              </Pressable>
+              <Link href={`/(auth)/register?role=${role}` as Href} asChild key={role}>
+                <Pressable
+                  style={StyleSheet.flatten([
+                    styles.roleCard,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                  ])}>
+                  <View style={[styles.roleIcon, { backgroundColor: colors.primarySoft }]}>
+                    <Ionicons name={config.icon} size={27} color={colors.primary} />
+                  </View>
+                  <View style={styles.roleCopy}>
+                    <Text style={[styles.roleTitle, { color: colors.text }]}>{t(config.labelKey)}</Text>
+                    <Text style={[styles.roleBody, { color: colors.textMuted }]}>{t(config.descriptionKey)}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                </Pressable>
+              </Link>
             );
           })}
         </View>
