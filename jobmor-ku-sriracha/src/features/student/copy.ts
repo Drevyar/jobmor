@@ -1,5 +1,6 @@
 export const studentCopy = {
   en: {
+    availableJobs: 'Available jobs', results: 'Matching jobs', filters: 'Filters', searchHint: 'Find work that fits your schedule',
     profileTooLong: 'Use up to 160 characters for your name and 20 for your phone.',
     savedJobs: 'Saved jobs', saveJob: 'Save job', unsave: 'Unsave job', saved: 'Saved', notApplied: 'Not applied',
     apply: 'Apply for job', applied: 'Application submitted.', withdraw: 'Withdraw application', withdrawn: 'Application withdrawn.',
@@ -16,6 +17,7 @@ export const studentCopy = {
     clearFilters: 'Clear filters', unavailable: 'Job no longer available',
   },
   th: {
+    availableJobs: 'งานที่เปิดรับสมัคร', results: 'งานที่ตรงกับการค้นหา', filters: 'ตัวกรอง', searchHint: 'ค้นหางานที่เข้ากับตารางเรียนของคุณ',
     profileTooLong: 'ชื่อยาวได้ไม่เกิน 160 ตัวอักษร และเบอร์โทรไม่เกิน 20 ตัวอักษร',
     savedJobs: 'งานที่บันทึกไว้', saveJob: 'บันทึกงาน', unsave: 'เลิกบันทึกงาน', saved: 'บันทึกแล้ว', notApplied: 'ยังไม่ได้สมัคร',
     apply: 'สมัครงาน', applied: 'ส่งใบสมัครแล้ว', withdraw: 'ถอนใบสมัคร', withdrawn: 'ถอนใบสมัครแล้ว',

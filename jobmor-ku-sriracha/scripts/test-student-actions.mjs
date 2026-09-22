@@ -24,7 +24,9 @@ function harness(initial, overrides = {}) {
       useRef(value) { const index = cursor++; if (!(index in cells)) cells[index] = { current: value }; return cells[index]; },
     };
     if (name === 'expo-router') return { router: {} };
-    if (name === 'react-native') return { View: 'View' };
+    if (name === 'react-native') return { View: 'View', StyleSheet: { create: value => value } };
+    if (name === '@expo/vector-icons/Ionicons') return {};
+    if (name === '@/hooks/use-theme') return {};
     if (name.endsWith('/ui')) return { Button: 'Button', Card: 'Card', Copy: 'Copy', DeleteDialog: 'DeleteDialog', Notice: 'Notice', styles: {}, useEmployerText: () => key => key };
     if (name.endsWith('/jobs-screen')) return {};
     if (name.endsWith('/localization-provider')) return { useTranslation: () => ({ t: key => key }) };

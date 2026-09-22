@@ -12,7 +12,7 @@ export function Dashboard({ title, subtitle, metrics, sectionTitle, actionLabel,
   return (
     <Screen title={title} subtitle={subtitle}>
       <View style={styles.grid}>{metrics.map((metric) => <View key={metric.label} style={[styles.metric, { backgroundColor: colors.surface, borderColor: colors.border }]}><View style={[styles.metricIcon, { backgroundColor: colors.primarySoft }]}><Ionicons name={metric.icon} size={20} color={colors.primary} /></View><View><Text style={[styles.metricValue, { color: colors.text }]}>{metric.value ?? '—'}</Text><Text style={[styles.metricLabel, { color: colors.textMuted }]}>{metric.label}</Text></View></View>)}</View>
-      {actionLabel ? <Pressable onPress={onAction} style={[styles.action, { backgroundColor: colors.primary }]}><Ionicons name="add" size={22} color="#FFFFFF" /><Text style={styles.actionText}>{actionLabel}</Text></Pressable> : null}
+      {actionLabel ? <Pressable onPress={onAction} style={[styles.action, { backgroundColor: colors.primary }]}><Ionicons name="add" size={22} color={colors.onPrimary} /><Text style={[styles.actionText, { color: colors.onPrimary }]}>{actionLabel}</Text></Pressable> : null}
       <Text style={[styles.sectionTitle, { color: colors.text }]}>{sectionTitle}</Text>{children ?? <EmptySection />}
     </Screen>
   );

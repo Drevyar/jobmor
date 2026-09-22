@@ -20,8 +20,8 @@ export default function RolePreviewScreen() {
         <Image source={require('@/assets/images/icon.png')} style={styles.logo} />
         <Text style={[styles.brand, { color: colors.text }]}>JobMor</Text>
         <Pressable onPress={() => router.push('/(auth)/login' as Href)} style={[styles.loginButton, { backgroundColor: colors.primary }]}>
-          <Ionicons name="log-in-outline" size={20} color="#FFFFFF" />
-          <Text style={styles.loginButtonText}>{t('auth.login')}</Text>
+          <Ionicons name="log-in-outline" size={20} color={colors.onPrimary} />
+          <Text style={[styles.loginButtonText, { color: colors.onPrimary }]}>{t('auth.login')}</Text>
         </Pressable>
         <View style={styles.dividerRow}>
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
