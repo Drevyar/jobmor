@@ -32,6 +32,7 @@ build/
 .env
 .env.*
 !.env.example
+.employer-admin.env
 
 # ─── Logs ────────────────────────────────────────────────────────────────────
 logs/

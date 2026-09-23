@@ -133,3 +133,18 @@ npm run admin:create
 ```
 
 The migration enforces a unique index that allows only one `admin` profile. Public registration accepts only `student` and `employer`.
+
+## Create one confirmed development employer
+
+This one-time script creates an employer through Supabase Admin with email confirmation
+already complete, then marks the matching JobMor profile verified. It does not change
+public sign-up behavior. Copy `.employer-admin.env.example` to `.employer-admin.env`,
+fill in the Supabase secret key and test password locally, then run `npm run employer:create`.
+The `.employer-admin.env` file is Git-ignored and is not loaded by Expo. Delete it after
+the account is created. Never put a Supabase secret or service-role key in `EXPO_PUBLIC_*`
+variables or share it in chat.
+
+The example uses placeholder development profile details. Set `EMPLOYER_NAME`,
+`EMPLOYER_PHONE`, `EMPLOYER_COMPANY`, `EMPLOYER_CATEGORY`, and `EMPLOYER_ADDRESS` to the
+values you want on this test employer. If those fields are omitted, the script uses the
+example values from its defaults.

@@ -7,7 +7,7 @@ const password = process.env.EMPLOYER_PASSWORD;
 
 if (!supabaseUrl || !adminKey || !email || !password) {
   throw new Error(
-    'Set SUPABASE_SECRET_KEY (recommended) or SUPABASE_SERVICE_ROLE_KEY, EMPLOYER_EMAIL, and EMPLOYER_PASSWORD in the terminal. The Supabase URL may come from .env or SUPABASE_URL.',
+    'Set SUPABASE_SECRET_KEY (recommended) or SUPABASE_SERVICE_ROLE_KEY, EMPLOYER_EMAIL, and EMPLOYER_PASSWORD in .employer-admin.env. The Supabase URL may come from .env or SUPABASE_URL.',
   );
 }
 
