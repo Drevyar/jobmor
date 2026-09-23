@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
 
 import { Screen } from '@/components/screen';
 import { useTheme } from '@/hooks/use-theme';
@@ -13,14 +12,9 @@ import type { AuditLogActionType } from '../types/moderation';
 export function AdminProfileScreen() {
   const colors = useTheme();
   const { t, language, setLanguage } = useTranslation();
-  const router = useRouter();
 
   const handleToggleLanguage = () => {
     setLanguage(language === 'th' ? 'en' : 'th');
-  };
-
-  const handleSwitchWorkspace = () => {
-    router.replace('/(auth)' as any);
   };
 
   const getLogIcon = (type: AuditLogActionType) => {
@@ -152,20 +146,6 @@ export function AdminProfileScreen() {
         </View>
       </Pressable>
 
-      {/* Switch Workspace */}
-      <Pressable
-        onPress={handleSwitchWorkspace}
-        style={({ pressed }) => [
-          styles.switchRoleBtn,
-          {
-            backgroundColor: colors.primary,
-            opacity: pressed ? 0.85 : 1,
-          },
-        ]}
-      >
-        <Ionicons name="apps-outline" size={18} color="#FFFFFF" />
-        <Text style={styles.switchRoleBtnText}>{t('admin.switchWorkspace')}</Text>
-      </Pressable>
     </Screen>
   );
 }
@@ -318,21 +298,6 @@ const styles = StyleSheet.create({
   },
   langBadgeText: {
     fontSize: 12,
-    fontWeight: '700',
-  },
-  switchRoleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    height: 48,
-    borderRadius: 14,
-    marginTop: 4,
-    marginBottom: 24,
-  },
-  switchRoleBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
     fontWeight: '700',
   },
 });
