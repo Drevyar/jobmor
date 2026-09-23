@@ -148,3 +148,10 @@ The example uses placeholder development profile details. Set `EMPLOYER_NAME`,
 `EMPLOYER_PHONE`, `EMPLOYER_COMPANY`, `EMPLOYER_CATEGORY`, and `EMPLOYER_ADDRESS` to the
 values you want on this test employer. If those fields are omitted, the script uses the
 example values from its defaults.
+
+To confirm an already-created employer account once without changing the project's
+email-confirmation setting, keep the exact account email in `.employer-admin.env`, set a
+Supabase secret/service-role key there, and run `npm run employer:confirm-email`. The script
+checks that the same email exists in both `auth.users` and `profiles` with the employer role,
+then confirms only that Auth user. `profiles.verification_status` and
+`auth.users.email_confirmed_at` are separate states.
