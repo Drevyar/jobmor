@@ -7,5 +7,5 @@ export default function RegisterScreen() {
   const { role } = useLocalSearchParams<{ role?: string }>();
   const initialRole: RegistrationRole = role === 'employer' ? 'employer' : 'student';
 
-  return <RegisterForm initialRole={initialRole} onBack={() => router.back()} />;
+  return <RegisterForm initialRole={initialRole} onBack={() => (router.canGoBack() ? router.back() : router.replace('/(auth)'))} />;
 }

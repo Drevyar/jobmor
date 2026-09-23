@@ -9,10 +9,13 @@ export type StudentJob = Tables<'jobs'> & { application: Tables<'applications'> 
 
 async function studentId() {
   const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throw new StudentError('signInRequired');
+  if (error) throw error;
+  if (!data.user) throw new StudentError('signInRequired');
   const profile = await supabase.from('profiles').select('role,verification_status').eq('id', data.user.id).single();
   if (profile.error) throw profile.error;
-  if (profile.data.role !== 'student' || profile.data.verification_status !== 'verified') throw new StudentError('verifiedRequired');
+  if (profile.data.role !== 'student' || profile.data.verification_status !== 'verified') {
+    throw new StudentError('verifiedRequired');
+  }
   return data.user.id;
 }
 
@@ -26,13 +29,13 @@ export async function getStudentCollection() {
   if (jobs.error) throw jobs.error;
   if (applications.error) throw applications.error;
   if (saved.error) throw saved.error;
-  const byJob = new Map(applications.data.map(item => [item.job_id, item]));
-  const savedIds = new Set(saved.data.map(item => item.job_id));
-  const visibleIds = new Set(jobs.data.map(job => job.id));
+  const byJob = new Map((applications.data ?? []).map((item) => [item.job_id, item]));
+  const savedIds = new Set(saved.data.map((item) => item.job_id));
+  const visibleIds = new Set((jobs.data ?? []).map((job) => job.id));
   return {
-    jobs: jobs.data.map(job => ({ ...job, application: byJob.get(job.id) ?? null, saved: savedIds.has(job.id) })),
-    unavailable: [...new Set([...byJob.keys(), ...savedIds])].filter(id => !visibleIds.has(id)).map(id => ({
-      id, status: null, application: byJob.get(id) ?? null, saved: savedIds.has(id),
+    jobs: (jobs.data ?? []).map((job) => ({ ...job, application: byJob.get(job.id) ?? null, saved: savedIds.has(job.id) })),
+    unavailable: [...new Set([...byJob.keys(), ...savedIds])].filter((targetId) => !visibleIds.has(targetId)).map((targetId) => ({
+      id: targetId, status: null, application: byJob.get(targetId) ?? null, saved: savedIds.has(targetId),
     })),
   };
 }
@@ -95,4 +98,17 @@ export async function updateStudentProfile(form: { display_name: string; phone: 
     .eq('id', id).select().single();
   if (error) throw error;
   return data;
+}
+
+export async function submitJobReport(jobId: string, reason: string) {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) throw authError;
+  if (!user) throw new StudentError('session');
+  const { error } = await supabase.from('reports').insert({
+    reporter_id: user.id,
+    target_type: 'job',
+    target_id: jobId,
+    reason: reason.trim(),
+  });
+  if (error) throw error;
 }

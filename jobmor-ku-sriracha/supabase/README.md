@@ -47,11 +47,16 @@ In Authentication settings:
 
 1. Enable email/password sign-up.
 2. Enable email confirmations.
-3. Add `jobmorkusriracha://auth/callback` and `jobmorkusriracha://reset-password` to Redirect URLs.
-4. For development only, add `exp://**` for Expo Go and `http://localhost:8081/reset-password` for the local web app. Remove development wildcards before production.
+3. Add `jobmorkusriracha://callback` and `jobmorkusriracha://reset-password` to Redirect URLs.
+4. For development only, add `exp://**`, `http://localhost:8081/callback`, and `http://localhost:8081/reset-password`. Remove development wildcards before production.
 5. Set the minimum password length to at least 8.
 
 ## Use the Supabase default Auth email service
+
+Email confirmation returns to `/callback`, where the app exchanges the Supabase
+confirmation code or verifies a token hash before showing success. The committed
+`supabase/config.toml` does not update hosted Auth settings: add the callback URLs
+above in the Dashboard and request a new confirmation email after changing them.
 
 No email provider or domain is required for development. Keep external email-provider
 integration disabled in the hosted Supabase project's Authentication settings.
@@ -60,6 +65,12 @@ The default service is intentionally restricted: it sends Auth emails only to ad
 that belong to members of the Supabase organization, and its hourly quota is very low. Add
 the test email to the organization team before testing registration or password recovery.
 If the quota is reached, wait for the rolling hour window before requesting another email.
+
+Before testing sign-up, check **Authentication > Users**. Reusing an existing confirmed
+email can return an accepted sign-up response without creating an account or sending
+another confirmation email. Sign in with that account, reset its password if needed, or
+test with an address that is not already in Auth Users. For an unconfirmed existing
+account, sign in and use the resend confirmation action shown after the confirmation error.
 
 ## Test password recovery redirects
 
@@ -122,3 +133,14 @@ npm run admin:create
 ```
 
 The migration enforces a unique index that allows only one `admin` profile. Public registration accepts only `student` and `employer`.
+
+Migration `202609240001_admin_read_jobs.sql` adds read-only job visibility for
+verified admins so the dashboard and job list can use live records. It does not
+grant job moderation writes. Apply it with the normal migration workflow before
+using the admin job list against a hosted project.
+
+Migration `202609240002_admin_workflows.sql` adds user-submitted job reports,
+admin report resolution/dismissal, and account suspension/restoration RPCs. Apply
+it before using the pending-report dashboard count, report screens, or user
+management actions. Suspended accounts lose verified-only app actions; the Auth
+session itself remains active until the user signs out.

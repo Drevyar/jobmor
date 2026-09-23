@@ -1,1 +1,5 @@
-import { FeatureScreen } from '@/components/feature-screen'; export default function JobsScreen() { return <FeatureScreen titleKey="admin.jobs" />; }
+import { AdminJobsScreen } from '@/features/admin';
+
+export default function JobsScreen() {
+  return <AdminJobsScreen />;
+}

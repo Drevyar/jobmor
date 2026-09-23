@@ -75,6 +75,12 @@ test('collection combines backend application and saved state and retains inacce
   assert.equal(data.unavailable[0].id, 'hidden-job');
   assert.equal(data.unavailable[0].saved, true);
 });
+test('collection reports missing schema and saved-job read failures instead of substituting sample jobs', async () => {
+  const schemaError = { code: '42P01', message: 'relation does not exist' };
+  await assert.rejects(setup([{ data: null, error: schemaError }, ok([]), ok([])]).api.getStudentCollection(), error => error === schemaError);
+  const savedError = { code: '42501', message: 'permission denied' };
+  await assert.rejects(setup([ok([]), ok([]), { data: null, error: savedError }]).api.getStudentCollection(), error => error === savedError);
+});
 test('detail rejects inaccessible jobs', async () => {
   await assert.rejects(setup([ok(null)]).api.getStudentJob('hidden-job'), error => error.key === 'jobNotFound');
 });
