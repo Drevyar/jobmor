@@ -110,7 +110,7 @@ export async function confirmEmailFromUrl(url: string) {
     return;
   }
 
-  throw new Error('Email confirmation details are missing or expired.');
+  throw new Error('No confirmation code or token was received by the app. Check the confirmation email link and the Supabase redirect settings.');
 }
 
 export async function requestPasswordReset(email: string) {

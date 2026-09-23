@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -132,7 +133,7 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
     setSubmitError('');
     try {
       await registerAccount(form);
-      console.log('[RegisterForm] registration successful!');
+      console.log('[RegisterForm] registration request accepted. Email delivery is not guaranteed.');
       setRegisteredEmail(form.email.trim().toLowerCase());
     } catch (error) {
       console.warn('[RegisterForm] registration error:', error);
@@ -178,8 +179,17 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
               {t(resendingConfirmation ? 'auth.sendingEmail' : 'auth.resendConfirmation')}
             </Text>
           </Pressable>
-          <Pressable onPress={onBack} style={[styles.primaryButton, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t('auth.backHome')}</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.replace('/login')}
+            style={[styles.primaryButton, { width: '100%', backgroundColor: colors.primary }]}>
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t('auth.login')}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onBack}
+            style={[styles.resendButton, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+            <Text style={[styles.resendButtonText, { color: colors.primary }]}>{t('auth.backHome')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
