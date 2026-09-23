@@ -47,11 +47,16 @@ In Authentication settings:
 
 1. Enable email/password sign-up.
 2. Enable email confirmations.
-3. Add `jobmorkusriracha://auth/callback` and `jobmorkusriracha://reset-password` to Redirect URLs.
-4. For development only, add `exp://**` for Expo Go and `http://localhost:8081/reset-password` for the local web app. Remove development wildcards before production.
+3. Add `jobmorkusriracha://callback` and `jobmorkusriracha://reset-password` to Redirect URLs.
+4. For development only, add `exp://**`, `http://localhost:8081/callback`, and `http://localhost:8081/reset-password`. Remove development wildcards before production.
 5. Set the minimum password length to at least 8.
 
 ## Use the Supabase default Auth email service
+
+Email confirmation returns to `/callback`, where the app exchanges the Supabase
+confirmation code or verifies a token hash before showing success. The committed
+`supabase/config.toml` does not update hosted Auth settings: add the callback URLs
+above in the Dashboard and request a new confirmation email after changing them.
 
 No email provider or domain is required for development. Keep external email-provider
 integration disabled in the hosted Supabase project's Authentication settings.

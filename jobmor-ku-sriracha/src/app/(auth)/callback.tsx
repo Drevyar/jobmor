@@ -1,28 +1,93 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import * as Linking from 'expo-linking';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { confirmEmailFromUrl } from '@/features/auth/auth-service';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/providers/localization-provider';
+
+type ConfirmationStatus = 'checking' | 'success' | 'error';
 
 export default function AuthCallbackScreen() {
   const colors = useTheme();
   const { t } = useTranslation();
+  const linkingUrl = Linking.useLinkingURL();
+  const processedUrls = useRef(new Set<string>());
+  const [status, setStatus] = useState<ConfirmationStatus>('checking');
+
+  const processUrl = useCallback(async (url: string | null) => {
+    if (!url || processedUrls.current.has(url)) return;
+    processedUrls.current.add(url);
+    setStatus('checking');
+
+    try {
+      await confirmEmailFromUrl(url);
+      setStatus('success');
+    } catch {
+      setStatus('error');
+    }
+  }, []);
+
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      void processUrl(url);
+    });
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      void Promise.resolve().then(() => processUrl(window.location.href));
+    } else {
+      void Linking.getInitialURL().then(processUrl);
+    }
+
+    return () => subscription.remove();
+  }, [processUrl]);
+
+  useEffect(() => {
+    if (linkingUrl) void Promise.resolve().then(() => processUrl(linkingUrl));
+  }, [linkingUrl, processUrl]);
+
+  const isChecking = status === 'checking';
+  const isSuccess = status === 'success';
+  const title = isChecking
+    ? t('auth.verifyingEmail')
+    : isSuccess
+      ? t('auth.verifiedTitle')
+      : t('auth.emailVerificationFailed');
+  const body = isChecking
+    ? t('auth.verifyingEmailBody')
+    : isSuccess
+      ? t('auth.verifiedBody')
+      : t('auth.emailVerificationFailedBody');
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <View style={[styles.icon, { backgroundColor: colors.primarySoft }]}>
-          <Ionicons name="checkmark-circle" size={56} color={colors.primary} />
+        <View style={[styles.icon, { backgroundColor: isSuccess ? colors.primarySoft : colors.surface }]}>
+          {isChecking ? (
+            <ActivityIndicator size="large" color={colors.primary} />
+          ) : (
+            <Ionicons
+              name={isSuccess ? 'checkmark-circle' : 'alert-circle'}
+              size={56}
+              color={isSuccess ? colors.primary : colors.danger}
+            />
+          )}
         </View>
-        <Text style={[styles.title, { color: colors.text }]}>{t('auth.verifiedTitle')}</Text>
-        <Text style={[styles.body, { color: colors.textMuted }]}>{t('auth.verifiedBody')}</Text>
-        <Pressable
-          onPress={() => router.replace('/')}
-          style={[styles.button, { backgroundColor: colors.primary }]}>
-          <Text style={[styles.buttonText, { color: colors.onPrimary }]}>{t('auth.backHome')}</Text>
-        </Pressable>
+        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+        <Text style={[styles.body, { color: colors.textMuted }]}>{body}</Text>
+        {!isChecking && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.replace(isSuccess ? '/' : '/login')}
+            style={[styles.button, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
+              {isSuccess ? t('auth.continueToApp') : t('auth.backToLogin')}
+            </Text>
+          </Pressable>
+        )}
       </View>
     </SafeAreaView>
   );

@@ -15,11 +15,12 @@ handling, role resolution, and authenticated profile actions.
 - Sign-out
 - Forgot-password and reset-password screens
 - Recovery handling for implicit-token and PKCE callback formats
+- Email-confirmation callback handling for PKCE codes, token hashes, and session tokens
 - Shared validation and localized authentication messages
 
 ## Remaining work
 
-- Verify password recovery through Expo Go or a development build
+- Verify email confirmation and password recovery through Expo Go or a development build
 - Run signed-in end-to-end checks for login, logout, recovery, and cross-role route access
 
 ## Security requirements

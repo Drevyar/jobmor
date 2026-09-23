@@ -29,18 +29,19 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { session, role, isLoading } = useAuth();
   const segments = useSegments() as string[];
   const isRecoveryRoute = segments[0] === '(auth)' && segments[1] === 'reset-password';
+  const isEmailCallbackRoute = segments[0] === '(auth)' && segments[1] === 'callback';
 
   useEffect(() => {
-    if (fontsReady && (!isLoading || isRecoveryRoute)) void SplashScreen.hideAsync();
-  }, [fontsReady, isLoading, isRecoveryRoute]);
+    if (fontsReady && (!isLoading || isRecoveryRoute || isEmailCallbackRoute)) void SplashScreen.hideAsync();
+  }, [fontsReady, isLoading, isRecoveryRoute, isEmailCallbackRoute]);
 
   // Recovery establishes a session itself. Keep its form mounted while the
   // auth provider loads the profile, otherwise it consumes the link again.
-  if (!fontsReady || (isLoading && !isRecoveryRoute)) return null;
+  if (!fontsReady || (isLoading && !isRecoveryRoute && !isEmailCallbackRoute)) return null;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!session || isRecoveryRoute}>
+      <Stack.Protected guard={!session || isRecoveryRoute || isEmailCallbackRoute}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
       <Stack.Protected guard={!!session && role === 'student'}>
