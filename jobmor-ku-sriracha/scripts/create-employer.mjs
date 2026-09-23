@@ -1,13 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const adminKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
 const email = process.env.EMPLOYER_EMAIL?.trim().toLowerCase();
 const password = process.env.EMPLOYER_PASSWORD;
 
-if (!supabaseUrl || !serviceRoleKey || !email || !password) {
+if (!supabaseUrl || !adminKey || !email || !password) {
   throw new Error(
-    'Set SUPABASE_SERVICE_ROLE_KEY, EMPLOYER_EMAIL, and EMPLOYER_PASSWORD in the terminal. The Supabase URL may come from .env or SUPABASE_URL.',
+    'Set SUPABASE_SECRET_KEY (recommended) or SUPABASE_SERVICE_ROLE_KEY, EMPLOYER_EMAIL, and EMPLOYER_PASSWORD in the terminal. The Supabase URL may come from .env or SUPABASE_URL.',
   );
 }
 
@@ -23,7 +23,7 @@ const employer = {
   address: process.env.EMPLOYER_ADDRESS?.trim() || 'KU Sriracha',
 };
 
-const supabase = createClient(supabaseUrl, serviceRoleKey, {
+const supabase = createClient(supabaseUrl, adminKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
