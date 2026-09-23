@@ -146,7 +146,15 @@ export async function getStudentJob(id: string) {
 export async function applyForJob(jobId: string) {
   const id = await studentId();
   if (id.startsWith('demo-')) {
-    return { id: 'demo-app-1', job_id: jobId, applicant_id: id, status: 'pending', created_at: new Date().toISOString() };
+    return {
+      id: 'demo-app-1',
+      job_id: jobId,
+      applicant_id: id,
+      message: '',
+      status: 'pending',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
   }
   const { data, error } = await supabase.from('applications').insert({ job_id: jobId, applicant_id: id }).select().single();
   if (error?.code === '23505') throw new StudentError('duplicate');
