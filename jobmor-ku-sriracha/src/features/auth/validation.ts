@@ -21,7 +21,8 @@ export function validateRegistration(form: RegistrationForm): RegistrationErrors
   if (form.role === 'student' && !KU_EMAIL_PATTERN.test(email)) errors.email = 'kuEmailOnly';
   if (!PHONE_PATTERN.test(form.phone.trim())) errors.phone = 'invalidPhone';
 
-  errors.password = validatePassword(form.password);
+  const passwordError = validatePassword(form.password);
+  if (passwordError) errors.password = passwordError;
 
   if (form.confirmPassword !== form.password) errors.confirmPassword = 'passwordMismatch';
 

@@ -1,9 +1,15 @@
+import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 
 import { supabase } from '@/lib/supabase';
 import type { RegistrationForm } from '@/features/auth/types';
 
-const EMAIL_REDIRECT_URL = 'jobmorkusriracha://auth/callback';
+function getEmailRedirectUrl() {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    return `${window.location.origin}/auth/callback`;
+  }
+  return Linking.createURL('auth/callback');
+}
 
 export async function registerAccount(form: RegistrationForm) {
   const commonMetadata = {
@@ -26,7 +32,7 @@ export async function registerAccount(form: RegistrationForm) {
     email: form.email.trim().toLowerCase(),
     password: form.password,
     options: {
-      emailRedirectTo: EMAIL_REDIRECT_URL,
+      emailRedirectTo: getEmailRedirectUrl(),
       data: { ...commonMetadata, ...employerMetadata },
     },
   });
