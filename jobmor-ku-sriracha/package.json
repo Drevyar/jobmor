@@ -48,9 +48,7 @@
     "supabase:reset": "supabase db reset",
     "supabase:push": "supabase db push",
     "supabase:types": "supabase gen types typescript --linked --schema public > src/types/database.generated.ts",
-    "admin:create": "node scripts/create-admin.mjs",
-    "employer:create": "node --env-file=.env --env-file=.employer-admin.env scripts/create-employer.mjs",
-    "employer:confirm-email": "node --env-file=.env --env-file=.employer-admin.env scripts/confirm-employer-email.mjs"
+    "admin:create": "node scripts/create-admin.mjs"
   },
   "private": true,
   "overrides": {

@@ -15,6 +15,12 @@ import { filterJobs } from '@/features/student/validation';
 
 const emptyFilters = { search: '', category: '', date: '', area: '', time: '', wage: '' };
 const categoryMap: Record<string, string> = { all: '', food: 'food-beverage', retail: 'retail', event: 'events' };
+const categoryOptions = [
+  { value: 'food-beverage', label: 'food' }, { value: 'retail', label: 'retail' },
+  { value: 'hospitality', label: 'hospitality' }, { value: 'education', label: 'education' },
+  { value: 'events', label: 'events' }, { value: 'office', label: 'office' },
+  { value: 'technology', label: 'technology' }, { value: 'logistics', label: 'logistics' },
+] as const;
 
 export function JobDiscovery({ explore = false }: { explore?: boolean }) {
   const colors = useTheme();
@@ -25,7 +31,7 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
   const [expanded, setExpanded] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const activeJobs = state.data?.filter(job => job.status === 'active') ?? [];
-  const categories = [...new Set(activeJobs.map(job => job.category))];
+  const categories = [...new Set([...categoryOptions.map(option => option.value), ...activeJobs.map(job => job.category)])];
   const jobs = filterJobs(activeJobs, filters);
   const chipKeys = explore ? ['date', 'category', 'area', 'time', 'wage'] : ['all', 'food', 'retail', 'event'];
 
@@ -55,8 +61,11 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
           })}
         </View>
         {explore && expanded === 'category' && <View style={styles.chips}>
-          {['', ...categories].map(category => <Button key={category} label={category || e('all')}
-            selected={filters.category === category} onPress={() => setFilters(current => ({ ...current, category }))} />)}
+          {[{ value: '', label: e('all') }, ...categories.map(value => {
+            const known = categoryOptions.find(option => option.value === value);
+            return { value, label: known ? t(`auth.categories.${known.label}`) : value };
+          })].map(category => <Button key={category.value} label={category.label}
+            selected={filters.category === category.value} onPress={() => setFilters(current => ({ ...current, category: category.value }))} />)}
         </View>}
         {explore && (['date', 'area', 'time', 'wage'] as const).map(key => expanded === key && <Field key={key}
           label={key === 'wage' ? t('studentFlow.minimumWage') : t(`student.filters.${key}`)}

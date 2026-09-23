@@ -6,28 +6,28 @@ authorization or database logic directly in the route.
 
 ## Scope
 
-- Platform metrics and operational health
-- Student and employer account review
-- Job moderation
-- Reports and verification queues
-- Administrative audit-oriented actions
+- Live platform counts
+- Student and employer account suspension and restoration
+- Read-only job list
+- User report intake and moderation
 
 ## Current state
 
-Admin routes, navigation, dashboard metrics, and empty states are visual
-prototypes. Moderation, reporting, and user-management CRUD operations are not
-yet implemented.
+The dashboard, user list, jobs, and reports read records from Supabase. Admins
+can suspend or restore student and employer accounts, and resolve or dismiss
+pending reports. Students can submit a report from a job detail screen. Apply
+the `202609240001_admin_read_jobs.sql` and
+`202609240002_admin_workflows.sql` migrations before using these workflows.
+Student email confirmation is automatic through Auth; there is no separate
+student identity-verification queue.
 
 ## Suggested structure
 
 ```text
 admin/
-├── admin-dashboard.tsx
-├── user-management.tsx
-├── job-moderation.tsx
-├── report-queue.tsx
-├── admin-service.ts
-└── types.ts
+├── components/                 # Admin screens
+├── admin-service.ts            # Supabase queries and admin actions
+└── README.md
 ```
 
 Administrative access must be verified by trusted backend logic and Supabase

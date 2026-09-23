@@ -71,7 +71,7 @@ export async function loginAccount(email: string, password: string) {
 }
 
 export async function logoutAccount() {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: 'local' });
   if (error) throw error;
 }
 
@@ -110,7 +110,7 @@ export async function confirmEmailFromUrl(url: string) {
     return;
   }
 
-  throw new Error('No confirmation code or token was received by the app. Check the confirmation email link and the Supabase redirect settings.');
+  throw new Error('The confirmation link is missing or expired. Check the email link and the Supabase redirect settings.');
 }
 
 export async function requestPasswordReset(email: string) {

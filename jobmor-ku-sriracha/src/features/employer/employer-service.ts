@@ -69,7 +69,7 @@ export async function getEmployerJobs() {
     const { data, error } = await supabase.from('jobs').select('*,applications(count)').eq('employer_id', id).order('created_at', { ascending: false });
     if (error) throw error;
     return data;
-  } catch (_err) {
+  } catch {
     return DEMO_EMPLOYER_JOBS;
   }
 }

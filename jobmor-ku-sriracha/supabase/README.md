@@ -134,24 +134,13 @@ npm run admin:create
 
 The migration enforces a unique index that allows only one `admin` profile. Public registration accepts only `student` and `employer`.
 
-## Create one confirmed development employer
+Migration `202609240001_admin_read_jobs.sql` adds read-only job visibility for
+verified admins so the dashboard and job list can use live records. It does not
+grant job moderation writes. Apply it with the normal migration workflow before
+using the admin job list against a hosted project.
 
-This one-time script creates an employer through Supabase Admin with email confirmation
-already complete, then marks the matching JobMor profile verified. It does not change
-public sign-up behavior. Copy `.employer-admin.env.example` to `.employer-admin.env`,
-fill in the Supabase secret key and test password locally, then run `npm run employer:create`.
-The `.employer-admin.env` file is Git-ignored and is not loaded by Expo. Delete it after
-the account is created. Never put a Supabase secret or service-role key in `EXPO_PUBLIC_*`
-variables or share it in chat.
-
-The example uses placeholder development profile details. Set `EMPLOYER_NAME`,
-`EMPLOYER_PHONE`, `EMPLOYER_COMPANY`, `EMPLOYER_CATEGORY`, and `EMPLOYER_ADDRESS` to the
-values you want on this test employer. If those fields are omitted, the script uses the
-example values from its defaults.
-
-To confirm an already-created employer account once without changing the project's
-email-confirmation setting, keep the exact account email in `.employer-admin.env`, set a
-Supabase secret/service-role key there, and run `npm run employer:confirm-email`. The script
-checks that the same email exists in both `auth.users` and `profiles` with the employer role,
-then confirms only that Auth user. `profiles.verification_status` and
-`auth.users.email_confirmed_at` are separate states.
+Migration `202609240002_admin_workflows.sql` adds user-submitted job reports,
+admin report resolution/dismissal, and account suspension/restoration RPCs. Apply
+it before using the pending-report dashboard count, report screens, or user
+management actions. Suspended accounts lose verified-only app actions; the Auth
+session itself remains active until the user signs out.
