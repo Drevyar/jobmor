@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { type Href, router } from 'expo-router';
+import { type Href, Link } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -74,9 +74,11 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
             </View>
           </View>
 
-          <Pressable onPress={() => router.push('/(auth)/forgot-password' as Href)} style={styles.forgotButton}>
-            <Text style={[styles.forgotText, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
-          </Pressable>
+          <Link href={'/(auth)/forgot-password' as Href} asChild>
+            <Pressable style={styles.forgotButton}>
+              <Text style={[styles.forgotText, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
+            </Pressable>
+          </Link>
 
           {error ? <Text style={[styles.error, { color: colors.danger, backgroundColor: colors.surface }]}>{error}</Text> : null}
 

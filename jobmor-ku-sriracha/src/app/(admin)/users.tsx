@@ -1,1 +1,5 @@
-import { FeatureScreen } from '@/components/feature-screen'; export default function UsersScreen() { return <FeatureScreen titleKey="admin.users" />; }
+import { AdminUsersScreen } from '@/features/admin';
+
+export default function UsersScreen() {
+  return <AdminUsersScreen />;
+}

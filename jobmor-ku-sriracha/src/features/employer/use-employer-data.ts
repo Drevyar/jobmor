@@ -4,7 +4,7 @@ import { useAuth } from '@/providers/auth-provider';
 import { EmployerError } from './employer-service';
 
 export function errorKey(error: unknown) {
-  if (__DEV__) console.error('Employer request failed', error);
+  if (__DEV__ && !(error instanceof EmployerError)) console.error('Employer request failed', error);
   return error instanceof EmployerError ? error.key : 'error';
 }
 

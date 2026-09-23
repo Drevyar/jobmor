@@ -23,6 +23,7 @@ type AuthState = {
 
 type AuthContextValue = AuthState & {
   retry: () => void;
+  setDemoRole: (role: UserRole | null) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -103,6 +104,32 @@ export function AuthProvider({ children }: PropsWithChildren) {
     };
   }, [applySession]);
 
+  const setDemoRole = useCallback((role: UserRole | null) => {
+    if (!role) {
+      setAuthState({ session: null, role: null, isLoading: false, error: null });
+      return;
+    }
+    setAuthState({
+      session: {
+        access_token: 'demo-token',
+        refresh_token: 'demo-refresh-token',
+        expires_in: 3600,
+        token_type: 'bearer',
+        user: {
+          id: `demo-${role}-id`,
+          app_metadata: {},
+          user_metadata: { role, display_name: `Demo ${role}` },
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          email: `${role}@jobmor.ku.th`,
+        },
+      } as Session,
+      role,
+      isLoading: false,
+      error: null,
+    });
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       ...authState,
@@ -110,8 +137,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setAuthState((current) => ({ ...current, isLoading: true, error: null }));
         setRetryCount((count) => count + 1);
       },
+      setDemoRole,
     }),
-    [authState],
+    [authState, setDemoRole],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -59,11 +59,13 @@ type FormFieldProps = {
   secureTextEntry?: boolean;
   multiline?: boolean;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  helperText?: string;
 };
 
 export function RegisterForm({ initialRole, onBack }: { initialRole: RegistrationRole; onBack: () => void }) {
   const colors = useTheme();
   const { t, toggleLanguage } = useTranslation();
+  const scrollRef = useRef<ScrollView>(null);
   const [form, setForm] = useState(() => initialForm(initialRole));
   const [errors, setErrors] = useState<RegistrationErrors>({});
   const [showCategories, setShowCategories] = useState(false);
@@ -78,17 +80,48 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
   };
 
   const submit = async () => {
+    console.log('[RegisterForm] submit triggered. form role:', form.role);
     const nextErrors = validateRegistration(form);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    const hasErrors = Object.values(nextErrors).some((err) => Boolean(err));
+    if (hasErrors) {
+      console.warn('[RegisterForm] validation errors:', nextErrors);
+      const errorList: string[] = [];
+      if (nextErrors.displayName) errorList.push(form.role === 'student' ? 'ชื่อ–นามสกุล' : 'ชื่อผู้ติดต่อ');
+      if (nextErrors.email === 'kuEmailOnly') errorList.push('อีเมลต้องลงท้ายด้วย @ku.th (สำหรับนิสิต)');
+      else if (nextErrors.email) errorList.push('รูปแบบอีเมลไม่ถูกต้อง');
+      if (nextErrors.phone) errorList.push('เบอร์โทรศัพท์ (ต้องมี 8–20 ตัวเลข)');
+      if (nextErrors.companyName) errorList.push('ชื่อร้าน / บริษัท');
+      if (nextErrors.businessCategory) errorList.push('เลือกประเภทธุรกิจ');
+      if (nextErrors.customCategory) errorList.push('ระบุประเภทธุรกิจ');
+      if (nextErrors.address) errorList.push('ที่อยู่ร้าน / บริษัท');
+      if (nextErrors.password === 'passwordFormat') errorList.push('รหัสผ่านต้องมีทั้งตัวพิมพ์ใหญ่ (A-Z), ตัวพิมพ์เล็ก (a-z) และตัวเลข (0-9)');
+      else if (nextErrors.password === 'passwordLength') errorList.push('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+      if (nextErrors.confirmPassword) errorList.push('รหัสผ่านยืนยันไม่ตรงกับรหัสผ่าน');
 
+      setSubmitError(`กรุณาตรวจสอบข้อมูล:\n• ${errorList.join('\n• ')}`);
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+      return;
+    }
+
+    console.log('[RegisterForm] validation passed, registering account...');
     setSubmitting(true);
     setSubmitError('');
     try {
       await registerAccount(form);
+      console.log('[RegisterForm] registration successful!');
       setRegisteredEmail(form.email.trim().toLowerCase());
     } catch (error) {
-      const detail = error instanceof Error ? error.message : '';
+      console.warn('[RegisterForm] registration error:', error);
+      const msg = error instanceof Error ? error.message : '';
+      let detail = msg;
+      if (msg.toLowerCase().includes('rate limit')) {
+        detail = 'โควตาส่งอีเมลยืนยันเกินกำหนดชั่วคราว กรุณารอสักครู่แล้วลองใหม่';
+      } else if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('user already registered')) {
+        detail = 'อีเมลนี้ถูกลงทะเบียนไปแล้ว กรุณาเข้าสู่ระบบ';
+      } else if (msg.toLowerCase().includes('database error')) {
+        detail = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาตรวจสอบข้อมูลและลองใหม่';
+      }
       setSubmitError(`${t('auth.registerFailed')}${detail ? ` (${detail})` : ''}`);
     } finally {
       setSubmitting(false);
@@ -118,7 +151,7 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView ref={scrollRef} contentContainerStyle={styles.content} keyboardShouldPersistTaps="always">
           <View style={styles.topBar}>
             <Pressable onPress={onBack} accessibilityLabel={t('auth.back')} style={[styles.iconButton, { borderColor: colors.border, backgroundColor: colors.surface }]}>
               <Ionicons name="arrow-back" size={21} color={colors.text} />
@@ -134,8 +167,24 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
 
           <View style={styles.form}>
             <FormField {...fieldProps} field="displayName" label={t(form.role === 'student' ? 'auth.name' : 'auth.contactName')} value={form.displayName} autoCapitalize="words" />
-            <FormField {...fieldProps} field="email" label={t('auth.email')} value={form.email} keyboardType="email-address" autoCapitalize="none" />
-            <FormField {...fieldProps} field="phone" label={t('auth.phone')} value={form.phone} keyboardType="phone-pad" autoCapitalize="none" />
+            <FormField
+              {...fieldProps}
+              field="email"
+              label={t('auth.email')}
+              value={form.email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              helperText={form.role === 'student' ? 'ใช้อีเมลนิสิต (@ku.th) เท่านั้น' : undefined}
+            />
+            <FormField
+              {...fieldProps}
+              field="phone"
+              label={t('auth.phone')}
+              value={form.phone}
+              keyboardType="phone-pad"
+              autoCapitalize="none"
+              helperText="เบอร์โทรศัพท์ 8–20 หลัก (เช่น 0812345678)"
+            />
 
             {form.role === 'employer' ? (
               <>
@@ -165,13 +214,30 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
               </>
             ) : null}
 
-            <FormField {...fieldProps} field="password" label={t('auth.password')} value={form.password} secureTextEntry autoCapitalize="none" />
+            <FormField
+              {...fieldProps}
+              field="password"
+              label={t('auth.password')}
+              value={form.password}
+              secureTextEntry
+              autoCapitalize="none"
+              helperText="อย่างน้อย 8 ตัวอักษร มีตัวพิมพ์ใหญ่ พิมพ์เล็ก และตัวเลข"
+            />
             <FormField {...fieldProps} field="confirmPassword" label={t('auth.confirmPassword')} value={form.confirmPassword} secureTextEntry autoCapitalize="none" />
           </View>
 
           {submitError ? <Text style={[styles.submitError, { color: colors.danger, backgroundColor: colors.surface }]}>{submitError}</Text> : null}
 
-          <Pressable disabled={submitting} onPress={submit} style={[styles.primaryButton, { backgroundColor: colors.primary }, submitting && styles.disabled]}>
+          <Pressable
+            disabled={submitting}
+            onPress={submit}
+            {...(Platform.OS === 'web' ? { onClick: submit } : {})}
+            style={[
+              styles.primaryButton,
+              { backgroundColor: colors.primary },
+              submitting && styles.disabled,
+              Platform.OS === 'web' && ({ cursor: submitting ? 'not-allowed' : 'pointer' } as any),
+            ]}>
             {submitting ? <ActivityIndicator color={colors.onPrimary} /> : <Ionicons name="person-add-outline" size={19} color={colors.onPrimary} />}
             <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t(submitting ? 'auth.submitting' : 'auth.submit')}</Text>
           </Pressable>
@@ -181,25 +247,47 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
   );
 }
 
-function FormField({ field, label, value, errors, onChange, keyboardType, secureTextEntry, multiline, autoCapitalize = 'sentences' }: FormFieldProps) {
+function FormField({ field, label, value, errors, onChange, keyboardType, secureTextEntry, multiline, autoCapitalize = 'sentences', helperText }: FormFieldProps) {
   const colors = useTheme();
   const { t } = useTranslation();
+  const [showPassword, setShowPassword] = useState(false);
   const error = errors[field];
+  const isPasswordField = !!secureTextEntry;
+
   return (
     <View style={styles.field}>
       <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={(text) => onChange(field, text)}
-        keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry}
-        multiline={multiline}
-        autoCapitalize={autoCapitalize}
-        autoCorrect={false}
-        placeholderTextColor={colors.textMuted}
-        style={[styles.input, multiline && styles.multiline, { color: colors.text, backgroundColor: colors.surface, borderColor: error ? colors.danger : colors.border }]}
-      />
-      {error ? <Text style={[styles.errorText, { color: colors.danger }]}>{t(`auth.${error}`)}</Text> : null}
+      <View style={isPasswordField ? styles.passwordWrapper : undefined}>
+        <TextInput
+          value={value}
+          onChangeText={(text) => onChange(field, text)}
+          keyboardType={keyboardType}
+          secureTextEntry={isPasswordField && !showPassword}
+          multiline={multiline}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={false}
+          placeholderTextColor={colors.textMuted}
+          style={[
+            styles.input,
+            multiline && styles.multiline,
+            isPasswordField && styles.passwordInput,
+            { color: colors.text, backgroundColor: colors.surface, borderColor: error ? colors.danger : colors.border },
+          ]}
+        />
+        {isPasswordField ? (
+          <Pressable
+            onPress={() => setShowPassword((prev) => !prev)}
+            style={styles.eyeButton}
+            accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}>
+            <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textMuted} />
+          </Pressable>
+        ) : null}
+      </View>
+      {error ? (
+        <Text style={[styles.errorText, { color: colors.danger }]}>{t(`auth.${error}`)}</Text>
+      ) : helperText ? (
+        <Text style={[styles.helperText, { color: colors.textMuted }]}>{helperText}</Text>
+      ) : null}
     </View>
   );
 }
@@ -210,7 +298,11 @@ const styles = StyleSheet.create({
   languageButton: { height: 38, paddingHorizontal: 11, borderRadius: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }, languageText: { fontSize: 12, fontWeight: '800' },
   title: { fontSize: 27, fontWeight: '900' }, hint: { fontSize: 13, marginTop: 5, marginBottom: 20 },
   form: { gap: 15 }, field: { gap: 6 }, label: { fontSize: 13, fontWeight: '700' }, input: { minHeight: 50, borderWidth: 1, borderRadius: 15, paddingHorizontal: 14, fontSize: 15 }, multiline: { minHeight: 92, paddingTop: 13, textAlignVertical: 'top' },
+  passwordWrapper: { position: 'relative', justifyContent: 'center' },
+  passwordInput: { paddingRight: 44 },
+  eyeButton: { position: 'absolute', right: 12, height: '100%', justifyContent: 'center', paddingHorizontal: 4 },
   select: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, inputText: { fontSize: 14 }, errorText: { fontSize: 12, lineHeight: 17 },
+  helperText: { fontSize: 12, lineHeight: 16 },
   categoryMenu: { borderWidth: 1, borderRadius: 15, paddingVertical: 5 }, categoryOption: { minHeight: 42, justifyContent: 'center', paddingHorizontal: 14 }, categoryText: { fontSize: 14 },
   submitError: { marginTop: 18, padding: 13, borderRadius: 13, fontSize: 12, lineHeight: 18 }, primaryButton: { minHeight: 52, marginTop: 22, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 18 }, primaryButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' }, disabled: { opacity: 0.65 },
   successContent: { flex: 1, width: '100%', maxWidth: 500, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', padding: 28 }, successIcon: { width: 76, height: 76, borderRadius: 25, alignItems: 'center', justifyContent: 'center' }, successTitle: { marginTop: 20, fontSize: 26, fontWeight: '900', textAlign: 'center' }, successBody: { marginTop: 9, maxWidth: 360, fontSize: 14, lineHeight: 21, textAlign: 'center' }, successEmail: { marginTop: 12, fontSize: 14, fontWeight: '800' },

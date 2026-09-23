@@ -1,5 +1,5 @@
-import { AuthenticatedProfileScreen } from '@/features/auth/authenticated-profile-screen';
+import { AdminProfileScreen } from '@/features/admin';
 
 export default function ProfileScreen() {
-  return <AuthenticatedProfileScreen titleKey="admin.profile" />;
+  return <AdminProfileScreen />;
 }
