@@ -11,6 +11,7 @@ handling, role resolution, and authenticated profile actions.
 - Role-based post-login navigation
 - Session restoration, refresh, and application-wide session state
 - Protected student, employer, and admin route groups with cross-role guards
+- A signed-out app launch opens the sign-in form; account selection is on the create-account screen
 - Sign-out
 - Forgot-password and reset-password screens
 - Recovery handling for implicit-token and PKCE callback formats
@@ -19,7 +20,6 @@ handling, role resolution, and authenticated profile actions.
 ## Remaining work
 
 - Verify password recovery through Expo Go or a development build
-- Verify password recovery on Android and iOS in Expo Go or a development build
 - Run signed-in end-to-end checks for login, logout, recovery, and cross-role route access
 
 ## Security requirements

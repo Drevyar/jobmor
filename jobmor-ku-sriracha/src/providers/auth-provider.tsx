@@ -54,10 +54,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
   });
   const [retryCount, setRetryCount] = useState(0);
   const requestId = useRef(0);
+  const sessionFailure = useRef<string | null>(null);
 
   const applySession = useCallback((session: Session | null) => {
+    if (session) sessionFailure.current = null;
     const currentRequest = ++requestId.current;
-    setAuthState({ session, role: null, isLoading: true, error: null });
+    const previousFailure = session ? null : sessionFailure.current;
+    setAuthState({ session, role: null, isLoading: !previousFailure, error: previousFailure });
+
+    if (previousFailure) return;
 
     void resolveRole(session)
       .then((role) => {
@@ -67,7 +72,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       .catch((error: unknown) => {
         if (currentRequest !== requestId.current) return;
         const message = error instanceof Error ? error.message : 'Could not load the session.';
-        setAuthState({ session, role: null, isLoading: false, error: message });
+        sessionFailure.current = message;
+        void supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        setAuthState({ session: null, role: null, isLoading: false, error: message });
       });
   }, []);
 
@@ -78,11 +85,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (!active) return;
 
       if (error) {
+        sessionFailure.current = error.message;
+        void supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
         setAuthState({ session: null, role: null, isLoading: false, error: error.message });
         return;
       }
 
       applySession(data.session);
+    }).catch((error: unknown) => {
+      if (!active) return;
+      const message = error instanceof Error ? error.message : 'Could not load the session.';
+      sessionFailure.current = message;
+      void supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+      setAuthState({ session: null, role: null, isLoading: false, error: message });
     });
 
     return () => {
@@ -107,6 +122,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       ...authState,
       retry: () => {
+        sessionFailure.current = null;
         setAuthState((current) => ({ ...current, isLoading: true, error: null }));
         setRetryCount((count) => count + 1);
       },

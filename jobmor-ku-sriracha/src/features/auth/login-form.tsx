@@ -16,11 +16,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { loginAccount } from '@/features/auth/auth-service';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/providers/localization-provider';
 
 export function LoginForm({ onBack }: { onBack: () => void }) {
   const colors = useTheme();
   const { t, toggleLanguage } = useTranslation();
+  const { error: sessionError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -135,7 +137,14 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
               {error ? (
                 <View accessibilityLiveRegion="polite" style={[styles.errorBox, { backgroundColor: colors.danger + '12' }]}>
                   <Ionicons name="alert-circle-outline" size={18} color={colors.danger} />
-                  <Text style={[styles.error, { color: colors.danger }]}>{error}</Text>
+                  <Text style={[styles.error, { color: colors.danger }]}>{error || t('auth.sessionLoadFailed')}</Text>
+                </View>
+              ) : null}
+
+              {!error && sessionError ? (
+                <View accessibilityLiveRegion="polite" style={[styles.errorBox, { backgroundColor: colors.danger + '12' }]}>
+                  <Ionicons name="alert-circle-outline" size={18} color={colors.danger} />
+                  <Text style={[styles.error, { color: colors.danger }]}>{t('auth.sessionLoadFailed')}</Text>
                 </View>
               ) : null}
 
@@ -152,7 +161,7 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
 
             <View style={styles.registerRow}>
               <Text style={[styles.registerPrompt, { color: colors.textMuted }]}>{t('auth.noAccount')}</Text>
-              <Link href={'/(auth)' as Href} asChild>
+              <Link href={'/(auth)/create-account' as Href} asChild>
                 <Pressable accessibilityRole="link" hitSlop={8}>
                   <Text style={[styles.registerLink, { color: colors.primary }]}>{t('auth.createAccount')}</Text>
                 </Pressable>
