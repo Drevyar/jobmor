@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { loginAccount } from '@/features/auth/auth-service';
+import { loginAccount, resendSignupConfirmation } from '@/features/auth/auth-service';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/providers/localization-provider';
@@ -28,6 +28,9 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [canResendConfirmation, setCanResendConfirmation] = useState(false);
+  const [resendingConfirmation, setResendingConfirmation] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   const submit = async () => {
     if (!email.trim() || !password) {
@@ -37,13 +40,31 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
 
     setSubmitting(true);
     setError('');
+    setCanResendConfirmation(false);
+    setResendMessage('');
     try {
       await loginAccount(email, password);
     } catch (submitError) {
       const detail = submitError instanceof Error ? submitError.message : '';
+      const normalizedDetail = detail.toLowerCase();
+      setCanResendConfirmation(normalizedDetail.includes('email not confirmed') || normalizedDetail.includes('email_not_confirmed'));
       setError(`${t('auth.loginFailed')}${detail ? ` (${detail})` : ''}`);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const resendConfirmation = async () => {
+    setResendingConfirmation(true);
+    setResendMessage('');
+    try {
+      await resendSignupConfirmation(email);
+      setResendMessage(t('auth.confirmationResent'));
+    } catch (resendError) {
+      const detail = resendError instanceof Error ? resendError.message : '';
+      setResendMessage(detail || t('auth.confirmationResendFailed'));
+    } finally {
+      setResendingConfirmation(false);
     }
   };
 
@@ -85,7 +106,7 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
                   <TextInput
                     accessibilityLabel={t('auth.email')}
                     value={email}
-                    onChangeText={(value) => { setEmail(value); if (error) setError(''); }}
+                    onChangeText={(value) => { setEmail(value); if (error) setError(''); setCanResendConfirmation(false); setResendMessage(''); }}
                     keyboardType="email-address"
                     autoComplete="email"
                     textContentType="emailAddress"
@@ -137,7 +158,21 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
               {error ? (
                 <View accessibilityLiveRegion="polite" style={[styles.errorBox, { backgroundColor: colors.danger + '12' }]}>
                   <Ionicons name="alert-circle-outline" size={18} color={colors.danger} />
-                  <Text style={[styles.error, { color: colors.danger }]}>{error || t('auth.sessionLoadFailed')}</Text>
+                  <View style={styles.errorContent}>
+                    <Text style={[styles.error, { color: colors.danger }]}>{error || t('auth.sessionLoadFailed')}</Text>
+                    {canResendConfirmation ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={resendingConfirmation || !email.trim()}
+                        onPress={() => void resendConfirmation()}
+                        style={styles.resendAction}>
+                        <Text style={[styles.resendActionText, { color: colors.primary }]}>
+                          {t(resendingConfirmation ? 'auth.sendingEmail' : 'auth.resendConfirmation')}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                    {resendMessage ? <Text style={[styles.error, { color: colors.primary }]}>{resendMessage}</Text> : null}
+                  </View>
                 </View>
               ) : null}
 
@@ -197,6 +232,9 @@ const styles = StyleSheet.create({
   forgotText: { fontSize: 13, fontWeight: '700' },
   errorBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 11, borderRadius: 12 },
   error: { flex: 1, fontSize: 12, lineHeight: 18 },
+  errorContent: { flex: 1, gap: 6 },
+  resendAction: { alignSelf: 'flex-start', paddingVertical: 3 },
+  resendActionText: { fontSize: 12, fontWeight: '800' },
   primaryButton: { minHeight: 52, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, paddingHorizontal: 16 },
   primaryButtonText: { fontSize: 15, fontWeight: '800' },
   registerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 22 },

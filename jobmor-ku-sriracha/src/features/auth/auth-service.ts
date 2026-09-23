@@ -50,6 +50,16 @@ export async function registerAccount(form: RegistrationForm) {
   return data;
 }
 
+export async function resendSignupConfirmation(email: string) {
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email.trim().toLowerCase(),
+    options: { emailRedirectTo: getEmailRedirectUrl() },
+  });
+
+  if (error) throw error;
+}
+
 export async function loginAccount(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.trim().toLowerCase(),

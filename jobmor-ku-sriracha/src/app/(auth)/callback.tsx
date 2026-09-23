@@ -17,6 +17,7 @@ export default function AuthCallbackScreen() {
   const linkingUrl = Linking.useLinkingURL();
   const processedUrls = useRef(new Set<string>());
   const [status, setStatus] = useState<ConfirmationStatus>('checking');
+  const [errorDetail, setErrorDetail] = useState('');
 
   const processUrl = useCallback(async (url: string | null) => {
     if (!url || processedUrls.current.has(url)) return;
@@ -26,7 +27,10 @@ export default function AuthCallbackScreen() {
     try {
       await confirmEmailFromUrl(url);
       setStatus('success');
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn('[AuthCallback] Email confirmation failed:', message);
+      setErrorDetail(message);
       setStatus('error');
     }
   }, []);
@@ -48,6 +52,17 @@ export default function AuthCallbackScreen() {
   useEffect(() => {
     if (linkingUrl) void Promise.resolve().then(() => processUrl(linkingUrl));
   }, [linkingUrl, processUrl]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (processedUrls.current.size === 0) {
+        setErrorDetail('No confirmation code or token was received by the app.');
+        setStatus('error');
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const isChecking = status === 'checking';
   const isSuccess = status === 'success';
@@ -78,6 +93,9 @@ export default function AuthCallbackScreen() {
         </View>
         <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         <Text style={[styles.body, { color: colors.textMuted }]}>{body}</Text>
+        {status === 'error' && errorDetail ? (
+          <Text selectable style={[styles.errorDetail, { color: colors.danger }]}>{errorDetail}</Text>
+        ) : null}
         {!isChecking && (
           <Pressable
             accessibilityRole="button"
@@ -113,6 +131,7 @@ const styles = StyleSheet.create({
   },
   title: { marginTop: 24, fontSize: 26, fontWeight: '900', textAlign: 'center' },
   body: { marginTop: 10, fontSize: 14, lineHeight: 21, textAlign: 'center' },
+  errorDetail: { marginTop: 12, fontSize: 12, lineHeight: 18, textAlign: 'center' },
   button: {
     width: '100%',
     minHeight: 52,
