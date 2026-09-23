@@ -18,14 +18,48 @@ function load(path, modules) {
 
 function recoveryService() {
   const calls = [];
-  const auth = Object.fromEntries(['setSession', 'exchangeCodeForSession', 'resetPasswordForEmail'].map(name =>
+  const auth = Object.fromEntries(['setSession', 'exchangeCodeForSession', 'resetPasswordForEmail', 'verifyOtp', 'resend', 'signUp'].map(name =>
     [name, async (...args) => { calls.push([name, ...args]); return { error: null }; }]));
   const api = load('../src/features/auth/auth-service.ts', {
     'expo-linking': { createURL: path => `exp://192.168.1.10:8081/--/${path}` },
+    'react-native': { Platform: { OS: 'android' } },
     '@/lib/supabase': { supabase: { auth } },
   });
   return { api, calls };
 }
+
+test('registration and resend use the Expo callback route', async () => {
+  const { api, calls } = recoveryService();
+  await api.registerAccount({
+    role: 'student', displayName: ' Student ', email: ' STUDENT@KU.TH ', phone: '0812345678',
+    password: 'Password123', confirmPassword: 'Password123', companyName: '',
+    businessCategory: '', customCategory: '', address: '',
+  });
+  assert.equal(calls[0][0], 'signUp');
+  assert.equal(calls[0][1].email, 'student@ku.th');
+  assert.equal(calls[0][1].options.emailRedirectTo, 'exp://192.168.1.10:8081/--/callback');
+  await api.resendSignupConfirmation(' STUDENT@KU.TH ');
+  assert.equal(calls[1][0], 'resend');
+  assert.equal(calls[1][1].email, 'student@ku.th');
+  assert.equal(calls[1][1].options.emailRedirectTo, 'exp://192.168.1.10:8081/--/callback');
+});
+
+test('email confirmation handles PKCE code, token hash, and session-token links', async () => {
+  const { api, calls } = recoveryService();
+  await api.confirmEmailFromUrl('http://localhost:8081/callback?code=signup-code');
+  assert.deepEqual(calls[0], ['exchangeCodeForSession', 'signup-code']);
+  await api.confirmEmailFromUrl('http://localhost:8081/callback?token_hash=signup-hash&type=email');
+  assert.equal(JSON.stringify(calls[1]), JSON.stringify(['verifyOtp', { token_hash: 'signup-hash', type: 'email' }]));
+  await api.confirmEmailFromUrl('jobmorkusriracha://callback#access_token=access&refresh_token=refresh');
+  assert.equal(JSON.stringify(calls[2]), JSON.stringify(['setSession', { access_token: 'access', refresh_token: 'refresh' }]));
+});
+
+test('email confirmation refuses a URL without valid confirmation parameters', async () => {
+  const { api, calls } = recoveryService();
+  await assert.rejects(api.confirmEmailFromUrl('http://localhost:8081/callback'), /missing or expired/);
+  await assert.rejects(api.confirmEmailFromUrl('http://localhost:8081/callback#error_description=Link+expired'), /Link expired/);
+  assert.equal(calls.length, 0);
+});
 
 test('Expo Go reset requests use an app callback, never localhost:3000', async () => {
   const { api, calls } = recoveryService();

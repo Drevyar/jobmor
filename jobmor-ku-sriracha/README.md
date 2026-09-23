@@ -5,8 +5,9 @@ and local employers. It provides dedicated workspaces for students, employers,
 and platform administrators.
 
 The project is under active development. Authentication, role guards, student
-job flows, and employer CRUD are implemented. Messaging and admin management
-screens remain prototypes.
+job flows, and employer CRUD are implemented. Admin metrics and account/job
+lists use live Supabase data; report handling and moderation changes are not
+implemented. Messaging remains a prototype.
 
 ## Project status
 

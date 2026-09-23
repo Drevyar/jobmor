@@ -4,7 +4,13 @@ import { useAuth } from '@/providers/auth-provider';
 import { StudentError } from './student-service';
 
 export function studentErrorKey(error: unknown) {
-  return error instanceof StudentError ? error.key : 'error';
+  if (error instanceof StudentError) return error.key;
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    const code = error.code;
+    if (code === '42P01' || code === 'PGRST205' || code === 'PGRST204') return 'databaseSetupRequired';
+    if (code === '42501') return 'verifiedRequired';
+  }
+  return 'error';
 }
 
 // Follow the existing focus-refresh pattern. Never retain another account's data.

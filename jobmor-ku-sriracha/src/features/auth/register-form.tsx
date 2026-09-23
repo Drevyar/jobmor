@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -14,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { registerAccount } from '@/features/auth/auth-service';
+import { registerAccount, resendSignupConfirmation } from '@/features/auth/auth-service';
 import type {
   RegistrationErrors,
   RegistrationField,
@@ -66,12 +67,31 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
   const colors = useTheme();
   const { t, toggleLanguage } = useTranslation();
   const scrollRef = useRef<ScrollView>(null);
+  const submissionLock = useRef(false);
   const [form, setForm] = useState(() => initialForm(initialRole));
   const [errors, setErrors] = useState<RegistrationErrors>({});
   const [showCategories, setShowCategories] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resendingConfirmation, setResendingConfirmation] = useState(false);
+  const [confirmationResent, setConfirmationResent] = useState(false);
+  const [resendError, setResendError] = useState('');
+
+  const resendConfirmation = async () => {
+    setResendingConfirmation(true);
+    setResendError('');
+    setConfirmationResent(false);
+    try {
+      await resendSignupConfirmation(registeredEmail);
+      setConfirmationResent(true);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      setResendError(message || t('auth.confirmationResendFailed'));
+    } finally {
+      setResendingConfirmation(false);
+    }
+  };
 
   const updateField = (field: RegistrationField, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -80,6 +100,9 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
   };
 
   const submit = async () => {
+    // Stop duplicate pointer/touch events before React can rerender the disabled button.
+    if (submissionLock.current) return;
+    submissionLock.current = true;
     console.log('[RegisterForm] submit triggered. form role:', form.role);
     const nextErrors = validateRegistration(form);
     setErrors(nextErrors);
@@ -101,6 +124,7 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
 
       setSubmitError(`กรุณาตรวจสอบข้อมูล:\n• ${errorList.join('\n• ')}`);
       scrollRef.current?.scrollTo({ y: 0, animated: true });
+      submissionLock.current = false;
       return;
     }
 
@@ -109,7 +133,7 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
     setSubmitError('');
     try {
       await registerAccount(form);
-      console.log('[RegisterForm] registration successful!');
+      console.log('[RegisterForm] registration request accepted. Email delivery is not guaranteed.');
       setRegisteredEmail(form.email.trim().toLowerCase());
     } catch (error) {
       console.warn('[RegisterForm] registration error:', error);
@@ -124,6 +148,7 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
       }
       setSubmitError(`${t('auth.registerFailed')}${detail ? ` (${detail})` : ''}`);
     } finally {
+      submissionLock.current = false;
       setSubmitting(false);
     }
   };
@@ -138,8 +163,33 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
           <Text style={[styles.successTitle, { color: colors.text }]}>{t('auth.checkEmail')}</Text>
           <Text style={[styles.successBody, { color: colors.textMuted }]}>{t('auth.checkEmailBody')}</Text>
           <Text style={[styles.successEmail, { color: colors.primary }]}>{registeredEmail}</Text>
-          <Pressable onPress={onBack} style={[styles.primaryButton, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t('auth.backHome')}</Text>
+          {confirmationResent ? (
+            <Text style={[styles.successBody, { color: colors.primary }]}>{t('auth.confirmationResent')}</Text>
+          ) : null}
+          {resendError ? (
+            <Text style={[styles.submitError, { color: colors.danger, backgroundColor: colors.surface }]}>{resendError}</Text>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            disabled={resendingConfirmation}
+            onPress={() => void resendConfirmation()}
+            style={[styles.resendButton, { borderColor: colors.border, backgroundColor: colors.surface }, resendingConfirmation && styles.disabled]}>
+            {resendingConfirmation ? <ActivityIndicator color={colors.primary} /> : null}
+            <Text style={[styles.resendButtonText, { color: colors.primary }]}>
+              {t(resendingConfirmation ? 'auth.sendingEmail' : 'auth.resendConfirmation')}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.replace('/login')}
+            style={[styles.primaryButton, { width: '100%', backgroundColor: colors.primary }]}>
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t('auth.login')}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onBack}
+            style={[styles.resendButton, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+            <Text style={[styles.resendButtonText, { color: colors.primary }]}>{t('auth.backHome')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -231,7 +281,6 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
           <Pressable
             disabled={submitting}
             onPress={submit}
-            {...(Platform.OS === 'web' ? { onClick: submit } : {})}
             style={[
               styles.primaryButton,
               { backgroundColor: colors.primary },
@@ -305,5 +354,5 @@ const styles = StyleSheet.create({
   helperText: { fontSize: 12, lineHeight: 16 },
   categoryMenu: { borderWidth: 1, borderRadius: 15, paddingVertical: 5 }, categoryOption: { minHeight: 42, justifyContent: 'center', paddingHorizontal: 14 }, categoryText: { fontSize: 14 },
   submitError: { marginTop: 18, padding: 13, borderRadius: 13, fontSize: 12, lineHeight: 18 }, primaryButton: { minHeight: 52, marginTop: 22, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 18 }, primaryButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' }, disabled: { opacity: 0.65 },
-  successContent: { flex: 1, width: '100%', maxWidth: 500, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', padding: 28 }, successIcon: { width: 76, height: 76, borderRadius: 25, alignItems: 'center', justifyContent: 'center' }, successTitle: { marginTop: 20, fontSize: 26, fontWeight: '900', textAlign: 'center' }, successBody: { marginTop: 9, maxWidth: 360, fontSize: 14, lineHeight: 21, textAlign: 'center' }, successEmail: { marginTop: 12, fontSize: 14, fontWeight: '800' },
+  successContent: { flex: 1, width: '100%', maxWidth: 500, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', padding: 28 }, successIcon: { width: 76, height: 76, borderRadius: 25, alignItems: 'center', justifyContent: 'center' }, successTitle: { marginTop: 20, fontSize: 26, fontWeight: '900', textAlign: 'center' }, successBody: { marginTop: 9, maxWidth: 360, fontSize: 14, lineHeight: 21, textAlign: 'center' }, successEmail: { marginTop: 12, fontSize: 14, fontWeight: '800' }, resendButton: { width: '100%', minHeight: 50, marginTop: 18, borderWidth: 1, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }, resendButtonText: { fontSize: 14, fontWeight: '800' },
 });
