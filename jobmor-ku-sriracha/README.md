@@ -42,6 +42,9 @@ documentation explicitly says otherwise.
 
 ## Getting started
 
+Employer Candidate Insight and Emergency Replacement setup:
+[Gemini Edge Function guide](docs/employer-ai.md).
+
 ### Prerequisites
 
 - Node.js 22 LTS

@@ -155,6 +155,8 @@ export async function getEmployerProfile(): Promise<BusinessProfile> {
         role: 'employer',
         email: 'employer@jobmor.ku.th',
         display_name: 'Demo Employer (ผู้ประกอบการตัวอย่าง)',
+        work_skills: '',
+        work_experience: '',
         phone: '0812345678',
         verification_status: 'verified',
         verified_at: new Date().toISOString(),

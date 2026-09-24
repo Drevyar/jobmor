@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      student_availability: {
+        Row: { id: string; student_id: string; starts_at: string; ends_at: string; created_at: string }
+        Insert: { id?: string; student_id: string; starts_at: string; ends_at: string; created_at?: string }
+        Update: { id?: string; student_id?: string; starts_at?: string; ends_at?: string; created_at?: string }
+        Relationships: [{ foreignKeyName: "student_availability_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }]
+      }
       saved_jobs: {
         Row: { student_id: string; job_id: string; created_at: string }
         Insert: { student_id: string; job_id: string; created_at?: string }
@@ -194,6 +200,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          work_skills: string
+          work_experience: string
           created_at: string
           display_name: string
           email: string
@@ -216,6 +224,8 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          work_skills?: string
+          work_experience?: string
           created_at?: string
           display_name?: string
           email?: string
@@ -287,6 +297,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_employer_ai_budget: { Args: { target_employer: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       admin_set_user_suspended: {
         Args: { should_suspend: boolean; target_profile: string }
