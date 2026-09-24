@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback } from 'react';
 import { Screen } from '@/components/screen';
+import { ReplacementPanel } from '@/features/employer-ai/replacement-panel';
 import { EmployerError, getJobById } from './employer-service';
 import { JobActions, JobSummary } from './jobs-screen';
 import { useEmployerData } from './use-employer-data';
@@ -20,5 +21,6 @@ export default function JobDetailScreen() {
         <Copy key={key}>{t(key)}: {state.data?.[key] || t('unavailable')}</Copy>)}
       <JobActions job={state.data} onDeleted={() => router.replace({ pathname: '/(employer)/jobs', params: { notice: 'deleted' } })} />
     </Card>}
+    {state.data && state.data.status !== 'draft' && <ReplacementPanel key={state.data.id} jobId={state.data.id} workingDate={state.data.working_date} shift={state.data.shift} />}
   </Screen>;
 }

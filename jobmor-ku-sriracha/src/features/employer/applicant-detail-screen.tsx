@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Screen } from '@/components/screen';
+import { InsightPanel } from '@/features/employer-ai/insight-panel';
 import { EmployerError, getApplicationById, getJobById, updateApplicationStatus } from './employer-service';
 import { errorKey, useEmployerData } from './use-employer-data';
 import { Button, Card, Copy, LoadState, Notice, useEmployerText } from './ui';
@@ -33,5 +34,6 @@ export default function ApplicantDetailScreen() {
       <Button label={t('accept')} disabled={busy || application.status === 'accepted'} onPress={() => void decide('accepted')} />
       <Button label={t('reject')} danger disabled={busy || application.status === 'rejected'} onPress={() => void decide('rejected')} />
     </Card>}
+    {application && jobId && <InsightPanel key={application.id} jobId={jobId} applicationId={application.id} />}
   </Screen>;
 }
