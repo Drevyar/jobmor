@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createAiHandler } from '../supabase/functions/_shared/ai-handler.ts';
-import { AiError, bangkokWindow, parseAiRequest, parseInsight, parseReplacementExplanations } from '../supabase/functions/_shared/ai-contracts.ts';
-import { availabilityStatus, eligibleReplacements, jobWindow, providerContext } from '../supabase/functions/_shared/ai-matching.ts';
+import { AiError, bangkokWindow, parseAiRequest, parseInsight } from '../supabase/functions/_shared/ai-contracts.ts';
+import { availabilityStatus, jobWindow, providerContext } from '../supabase/functions/_shared/ai-matching.ts';
 import { callAiProvider } from '../supabase/functions/_shared/ai-provider.ts';
 const jobId = '20000000-0000-4000-8000-000000000001';
 const applicationId = '20000000-0000-4000-8000-000000000002';
@@ -19,13 +19,13 @@ function setup(overrides = {}) {
     candidates: async () => [candidate], consumeBudget: async () => true,
     generate: async (request, data) => {
       calls.push(data);
-      return request.action === 'candidate-insight' ? insight : { candidates: data.candidates.map(c => ({ candidateId: c.candidateId, reasons: ['Work skills may be relevant.'], warnings: ['Confirm availability before hiring.'] })) };
+      return insight;
     }, ...overrides };
   return { handler: createAiHandler(deps), calls };
 }
 function request(action = 'candidate-insight', extra = {}) {
   return new Request('http://localhost/employer-ai', { method: 'POST', headers: { Authorization: 'Bearer test-auth-token-long-enough' },
-    body: JSON.stringify({ action, jobId, applicationId, language: 'en', ...(action === 'emergency-replacement' ? { shift } : {}), ...extra }) });
+    body: JSON.stringify({ action, jobId, applicationId, language: 'en', ...extra }) });
 }
 test('aligned applicant: structured insight, no identity/contact sent to provider', async () => {
   const { handler, calls } = setup();
@@ -44,31 +44,6 @@ test('applicant availability conflict is computed before AI', async () => {
   const { handler, calls } = setup({ candidates: async () => [{ ...candidate, availability: [bangkokWindow('2026-10-01','08:00','12:00')] }] });
   const response = await handler(request()); assert.equal((await response.json()).availability, 'conflict');
   assert.equal(calls[0].candidate.availability, 'conflict');
-});
-test('replacement: multiple eligible applicants are returned in application order', async () => {
-  const { handler } = setup({ candidates: async () => [candidate, { ...candidate, id: 'student-b', applicationId: 'application-b', name: 'B' }] });
-  const response = await handler(request('emergency-replacement'));
-  assert.equal(response.status, 200); const body = await response.json();
-  assert.deepEqual(body.candidates.map(c => c.candidateId), ['student-a','student-b']);
-});
-test('replacement: empty pool does not call AI or consume budget, even without configuration', async () => {
-  const { handler, calls } = setup({ configured: false, candidates: async () => [], consumeBudget: async () => { throw new Error('Should not charge'); } });
-  const response = await handler(request('emergency-replacement'));
-  assert.equal(response.status, 200); assert.deepEqual((await response.json()).candidates, []); assert.equal(calls.length, 0);
-});
-test('replacement excludes overlaps, unknown shifts, missing availability and nonpending applicants', () => {
-  const selection = eligibleReplacements([
-    candidate,
-    { ...candidate, id: 'overlap', commitments: [{ jobId: 'other', workingDate: '2026-10-01', shift: '20:00-23:00' }] },
-    { ...candidate, id: 'unknown', commitments: [{ jobId: 'other', workingDate: '2026-10-01', shift: 'Evening' }] },
-    { ...candidate, id: 'missing', availability: [] },
-    { ...candidate, id: 'partial', availability: [bangkokWindow('2026-10-01','18:00','20:00')] },
-    { ...candidate, id: 'accepted', status: 'accepted' },
-    { ...candidate, id: 'rejected', status: 'rejected' },
-    { ...candidate, id: 'suspended', verified: false },
-  ], shift, jobId);
-  assert.deepEqual(selection.eligible.map(c => c.id), ['student-a']);
-  assert.deepEqual(selection.excluded, { missingAvailability: 1, unavailable: 1, overlapping: 1, unknownCommitment: 1 });
 });
 test('overnight work and boundary touching are handled deterministically', () => {
   assert.equal(jobWindow({ working_date: '2026-10-01', shift: '22:00-02:00' }).endsAt, '2026-10-01T19:00:00.000Z');
@@ -95,16 +70,13 @@ test('missing AI config gives safe 503 and no fabricated insight', async () => {
   const { handler, calls } = setup({ configured: false }); const response = await handler(request());
   assert.equal(response.status, 503); assert.deepEqual(await response.json(), { error: 'notConfigured' }); assert.equal(calls.length, 0);
 });
-test('demo IDs, malformed requests and expired shifts are rejected', () => {
+test('demo IDs and removed AI actions are rejected', () => {
   assert.throws(() => parseAiRequest({ action: 'candidate-insight', jobId: 'demo-job', applicationId, language: 'en' }));
-  assert.throws(() => parseAiRequest({ action: 'emergency-replacement', jobId, shift, language: 'en' }, now + 2 * 86400000));
+  assert.throws(() => parseAiRequest({ action: 'emergency-replacement', jobId, shift, language: 'en' }));
 });
-test('model cannot inject IDs, omit candidates, return scores or extra fields', () => {
+test('model cannot return scores or extra fields', () => {
   assert.throws(() => parseInsight({ ...insight, score: 92 }));
   assert.throws(() => parseInsight({ ...insight, summary: '92% suitable' }));
-  assert.throws(() => parseReplacementExplanations({ candidates: [{ candidateId: 'foreign', reasons: ['x'], warnings: [] }] }, ['candidate-1']));
-  assert.throws(() => parseReplacementExplanations({ candidates: [] }, ['candidate-1']));
-  assert.throws(() => parseReplacementExplanations({ candidates: [{ candidateId: 'candidate-1', reasons: ['x'], warnings: [], score: 1 }] }, ['candidate-1']));
 });
 test('rate limiter denies before provider call', async () => {
   const { handler, calls } = setup({ consumeBudget: async () => false }); assert.equal((await handler(request())).status, 429); assert.equal(calls.length, 0);
@@ -158,31 +130,22 @@ test('Gemini thought parts are not interpreted as result JSON', async () => {
   payload.candidates[0].content.parts.unshift({ thought: true, text: 'Internal reasoning' });
   assert.deepEqual(await callAiProvider(providerOptions, async () => Response.json(payload)), insight);
 });
-test('both handler flows preserve frontend contracts through Gemini adapter', async () => {
-  for (const action of ['candidate-insight', 'emergency-replacement']) {
-    const { handler } = setup({ generate: (input, data) => callAiProvider({ ...providerOptions, action: input.action, language: 'th', data }, async (_url, init) => {
-      const body = JSON.parse(init.body);
-      assert.match(body.systemInstruction.parts[0].text, /Thai/);
-      const inputData = JSON.parse(body.contents[0].parts[0].text);
-      const output = action === 'candidate-insight' ? insight : { candidates: inputData.candidates.map(c => ({ candidateId: c.candidateId, reasons: ['Customer service skill stated.'], warnings: [] })) };
-      assert.ok(body.generationConfig.responseJsonSchema.properties[action === 'candidate-insight' ? 'summary' : 'candidates']);
-      return Response.json(geminiResponse(output));
-    }) });
-    const response = await handler(request(action));
-    assert.equal(response.status, 200);
-    const body = await response.json(); assert.equal(body.kind, action);
-    if (action === 'candidate-insight') assert.deepEqual(body.insight, insight);
-    else assert.equal(body.candidates[0].candidateId, candidate.id);
-  }
+test('Candidate Insight preserves frontend contract through Gemini adapter', async () => {
+  const { handler } = setup({ generate: (input, data) => callAiProvider({ ...providerOptions, action: input.action, language: 'th', data }, async (_url, init) => {
+    const body = JSON.parse(init.body);
+    assert.match(body.systemInstruction.parts[0].text, /Thai/);
+    assert.ok(body.generationConfig.responseJsonSchema.properties.summary);
+    return Response.json(geminiResponse(insight));
+  }) });
+  const response = await handler(request());
+  assert.equal(response.status, 200);
+  const body = await response.json(); assert.equal(body.kind, 'candidate-insight');
+  assert.deepEqual(body.insight, insight);
 });
-test('invalid Gemini structure/foreign candidate IDs never reach frontend', async () => {
-  for (const action of ['candidate-insight', 'emergency-replacement']) {
-    const { handler } = setup({ generate: input => callAiProvider({ ...providerOptions, action: input.action }, async () => Response.json(geminiResponse(
-      action === 'candidate-insight' ? { ...insight, score: 90 } : { candidates: [{ candidateId: 'foreign', reasons: ['x'], warnings: [] }] }
-    ))) });
-    const response = await handler(request(action)); assert.equal(response.status, 502);
-    assert.deepEqual(await response.json(), { error: 'invalidOutput' });
-  }
+test('invalid Gemini structure never reaches frontend', async () => {
+  const { handler } = setup({ generate: input => callAiProvider({ ...providerOptions, action: input.action }, async () => Response.json(geminiResponse({ ...insight, score: 90 }))) });
+  const response = await handler(request()); assert.equal(response.status, 502);
+  assert.deepEqual(await response.json(), { error: 'invalidOutput' });
 });
 test('missing applicant returns notFound without calling Gemini', async () => {
   const { handler, calls } = setup({ candidates: async () => [] });

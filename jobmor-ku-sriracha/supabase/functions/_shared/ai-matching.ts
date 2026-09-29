@@ -44,18 +44,6 @@ export function availabilityStatus(candidate: CandidateContext, shift: TimeWindo
   if (commitments === 'unknownCommitment' || candidate.availability.length === 0) return 'unknown';
   return covers(candidate.availability, shift) ? 'available' : 'conflict';
 }
-export function eligibleReplacements(candidates: CandidateContext[], shift: TimeWindow, jobId: string) {
-  const excluded = { missingAvailability: 0, unavailable: 0, overlapping: 0, unknownCommitment: 0 };
-  const eligible = candidates.filter(candidate => {
-    if (!candidate.verified || candidate.status !== 'pending') return false;
-    if (!candidate.availability.length) { excluded.missingAvailability++; return false; }
-    if (!covers(candidate.availability, shift)) { excluded.unavailable++; return false; }
-    const status = commitmentStatus(candidate, shift, jobId);
-    if (status !== 'clear') { excluded[status]++; return false; }
-    return true;
-  });
-  return { eligible, excluded };
-}
 /** Allowlist provider data. Never include identity, contact, university, or other employers' schedules. */
 export function providerContext(job: JobContext, candidate: CandidateContext, availability: AvailabilityStatus, alias: string) {
   return {

@@ -7,6 +7,11 @@ export function InsightPanel({ jobId, applicationId }: { jobId: string; applicat
   const { t, language } = useTranslation(); const a = (key: string) => t('employerAi.' + key);
   const state = useAiAction(); const result = state.result?.kind === 'candidate-insight' ? state.result : null;
   const real = isUuid(jobId) && isUuid(applicationId);
+  const readable = (line: string, section: 'summary' | 'strengths' | 'gaps' | 'interviewQuestions') => {
+    if (language !== 'th' || /[\u0e00-\u0e7f]/.test(line)) return line;
+    if (section === 'gaps' && /availab|shift|schedule|time/i.test(line)) return a('verifyAvailability');
+    return a(section === 'gaps' ? 'verifyMissing' : section === 'interviewQuestions' ? 'verifyQuestion' : 'translationFallback');
+  };
   return <Card><Copy strong>{a('insight')}</Copy><Copy>{a('privacy')}</Copy><Copy>{a('note')}</Copy>
     {!state.result && !state.busy && !state.error && <Copy>{a('emptyInsight')}</Copy>}
     {!real && <Notice text={a('realAccountRequired')} />}
@@ -15,10 +20,10 @@ export function InsightPanel({ jobId, applicationId }: { jobId: string; applicat
     {state.busy && <ActivityIndicator accessibilityLabel={a('loading')} />}
     <Notice text={state.error ? a(state.error) : result ? a('success') : ''} error={!!state.error} />
     {result && <><Notice text={a(result.availability)} error={result.availability === 'conflict'} />
-      <Copy strong>{a('summary')}</Copy><Copy>{result.insight.summary}</Copy>
+      <Copy strong>{a('summary')}</Copy><Copy>{readable(result.insight.summary, 'summary')}</Copy>
       {(['strengths','gaps','interviewQuestions'] as const).map(key => <Card key={key}>
         <Copy strong>{a(key === 'interviewQuestions' ? 'questions' : key)}</Copy>
-        {result.insight[key].length ? result.insight[key].map((line,i) => <Copy key={i}>{i + 1}. {line}</Copy>) : <Copy>{a('noEvidence')}</Copy>}
+        {result.insight[key].length ? result.insight[key].map((line,i) => <Copy key={i}>{i + 1}. {readable(line, key)}</Copy>) : <Copy>{a('noEvidence')}</Copy>}
       </Card>)}
     </>}
   </Card>;

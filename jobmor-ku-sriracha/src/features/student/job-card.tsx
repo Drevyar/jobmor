@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, Card, Copy, DeleteDialog, Notice, styles, useEmployerText } from '@/features/employer/ui';
+import { Button, Card, Copy, DeleteDialog, Notice, SuccessDialog, styles, useEmployerText } from '@/features/employer/ui';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/providers/localization-provider';
 import { applyForJob, setJobSaved, withdrawApplication, type StudentJob } from './student-service';
@@ -56,6 +56,7 @@ export function StudentJobActions({ job, changed }: { job: JobState; changed: (j
       } else if (action === 'save') {
         await setJobSaved(job.id, !job.saved);
         changed({ ...job, saved: !job.saved });
+        if (!job.saved) setNotice('saved');
       }
     } catch (reason) { setError(studentErrorKey(reason)); }
     finally { lock.current = false; setBusy(false); }
@@ -64,6 +65,7 @@ export function StudentJobActions({ job, changed }: { job: JobState; changed: (j
     <Copy>{job.application ? e(job.application.status) : s('notApplied')}{job.saved ? ` · ${s('saved')}` : ''}</Copy>
     {job.application && <Copy>{e('applied')}: {new Date(job.application.created_at).toLocaleDateString()}</Copy>}
     <Notice text={error ? s(error) : ''} error /><Notice text={notice ? s(notice) : ''} />
+    <SuccessDialog visible={notice === 'saved'} message={s('saved')} close={() => setNotice('')} />
     <View style={styles.row}>
       <Button label={busy ? e('saving') : s(job.saved ? 'unsave' : 'saveJob')} disabled={busy || (!job.saved && job.status !== 'active')} onPress={() => void run('save')} />
       {!job.application && job.status === 'active' && <Button variant="primary" label={s('apply')} disabled={busy} onPress={() => void run('apply')} />}

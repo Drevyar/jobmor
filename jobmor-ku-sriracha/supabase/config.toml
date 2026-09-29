@@ -412,6 +412,10 @@ enabled = true
 # Validate the user JWT via auth.getUser inside the function. Supports current
 # asymmetric Supabase signing keys; rejects missing/invalid tokens before reads.
 verify_jwt = false
+
+[functions.student-ai]
+# Bearer token is verified by auth.getUser before any profile or job reads.
+verify_jwt = false
 # Directory under `supabase/` where declarative files are written.
 # declarative_schema_path = "./schemas"
 # JSON string passed through to pg-delta SQL formatting. When omitted, SQL is

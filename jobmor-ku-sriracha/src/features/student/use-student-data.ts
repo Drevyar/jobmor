@@ -20,22 +20,28 @@ export function useStudentData<T>(load: () => Promise<T>) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [revision, setRevision] = useState(0);
   const sequence = useRef(0);
-  useFocusEffect(useCallback(() => {
-    void revision;
+  const refresh = useCallback(async (clearExisting: boolean): Promise<boolean> => {
     const request = ++sequence.current;
-    setData(null); setError('');
-    if (!account || role !== 'student') { setError('signInRequired'); setLoading(false); return; }
+    if (clearExisting) setData(null);
+    setError('');
+    if (!account || role !== 'student') { setError('signInRequired'); setLoading(false); return false; }
     setLoading(true);
-    void load().then(result => {
-      if (request === sequence.current) setData(result);
-    }).catch((reason: unknown) => {
+    try {
+      const result = await load();
+      if (request !== sequence.current) return false;
+      setData(result);
+      return true;
+    } catch (reason) {
       if (request === sequence.current) setError(studentErrorKey(reason));
-    }).finally(() => {
+      return false;
+    } finally {
       if (request === sequence.current) setLoading(false);
-    });
+    }
+  }, [load, account, role]);
+  useFocusEffect(useCallback(() => {
+    void refresh(true);
     return () => { sequence.current++; };
-  }, [load, account, role, revision]));
-  return { data, setData, error, loading, reload: () => setRevision(value => value + 1) };
+  }, [refresh]));
+  return { data, setData, error, loading, reload: () => refresh(false) };
 }

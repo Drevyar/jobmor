@@ -5,7 +5,7 @@ import { EmptySection, Screen } from '@/components/screen';
 import { deleteJob, getEmployerJobs } from './employer-service';
 import type { Job } from './types';
 import { errorKey, useEmployerData } from './use-employer-data';
-import { Button, Card, Copy, DeleteDialog, LoadState, Notice, styles, useEmployerText } from './ui';
+import { Button, Card, Copy, DeleteDialog, LoadState, Notice, SuccessDialog, styles, useEmployerText } from './ui';
 
 export function JobActions({ job, onDeleted }: { job: Job; onDeleted: () => void }) {
   const t = useEmployerText();
@@ -37,6 +37,7 @@ export default function JobsScreen() {
   return <Screen title={t('jobs')}>
     <Button label={t('create')} onPress={() => router.push('/(employer)/create-job')} />
     <Notice text={deleted ? t('deleted') : notice === 'saved' || notice === 'deleted' ? t(notice) : ''} />
+    <SuccessDialog visible={notice === 'saved'} message={t('saved')} close={() => router.setParams({ notice: '' })} />
     <LoadState {...state} retry={state.reload} />
     {state.data && <><Button label={t('refresh')} onPress={state.reload} />
       {!state.data.length && <EmptySection title={t('emptyJobs')} body={t('emptyJobsBody')} />}
