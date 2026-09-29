@@ -1,6 +1,6 @@
-import { AiError, parseAiRequest, parseInsight, parseReplacementExplanations } from './ai-contracts.ts';
+import { AiError, parseAiRequest, parseInsight } from './ai-contracts.ts';
 import type { AiRequest, AiResponse } from './ai-contracts.ts';
-import { availabilityStatus, eligibleReplacements, jobWindow, providerContext } from './ai-matching.ts';
+import { availabilityStatus, jobWindow, providerContext } from './ai-matching.ts';
 import type { CandidateContext, JobContext } from './ai-matching.ts';
 export type AiDependencies = {
   authorize: (token: string, jobId: string) => Promise<{ employerId: string; job: JobContext }>;
@@ -27,36 +27,16 @@ export function createAiHandler(deps: AiDependencies) {
       const input = parseAiRequest(raw, deps.now?.() ?? Date.now());
       // Authorization always precedes privileged reads, config checks, or provider calls.
       const { employerId, job } = await deps.authorize(token, input.jobId);
-      const candidates = await deps.candidates(job.id, input.action === 'candidate-insight' ? input.applicationId : undefined);
-      let result: AiResponse;
-      if (input.action === 'candidate-insight') {
-        const candidate = candidates.find(c => c.applicationId === input.applicationId);
-        if (!candidate || !candidate.verified) throw new AiError('notFound', 404);
-        if (!deps.configured) throw new AiError('notConfigured', 503);
-        if (!await deps.consumeBudget(employerId)) throw new AiError('rateLimited', 429);
-        const shift = jobWindow(job);
-        const availability = availabilityStatus(candidate, shift, job.id);
-        const generated = await deps.generate(input, { mode: input.action, shift,
-          candidate: providerContext(job, candidate, availability, 'candidate-1') });
-        result = { kind: input.action, insight: parseInsight(generated), availability };
-      } else {
-        if (job.status === 'draft' || !input.shift) throw new AiError('invalidShift');
-        const { eligible, excluded } = eligibleReplacements(candidates, input.shift, job.id);
-        if (eligible.length > 20) throw new AiError('tooManyCandidates', 422);
-        if (!eligible.length) return respond({ kind: input.action, shift: input.shift, candidates: [], excluded });
-        if (!deps.configured) throw new AiError('notConfigured', 503);
-        if (!await deps.consumeBudget(employerId)) throw new AiError('rateLimited', 429);
-        const aliases = eligible.map((_,i) => 'candidate-' + (i+1));
-        const generated = await deps.generate(input, { mode: input.action, shift: input.shift,
-          candidates: eligible.map((candidate,i) => providerContext(job, candidate, 'available', aliases[i])) });
-        const explanations = parseReplacementExplanations(generated, aliases);
-        // Model cannot add or omit candidates, change IDs, or determine display order.
-        result = { kind: input.action, shift: input.shift, excluded,
-          candidates: eligible.map((candidate,i) => ({
-            candidateId: candidate.id, applicationId: candidate.applicationId, name: candidate.name,
-            ...explanations.get(aliases[i])!,
-          })) };
-      }
+      const candidates = await deps.candidates(job.id, input.applicationId);
+      const candidate = candidates.find(c => c.applicationId === input.applicationId);
+      if (!candidate || !candidate.verified) throw new AiError('notFound', 404);
+      if (!deps.configured) throw new AiError('notConfigured', 503);
+      if (!await deps.consumeBudget(employerId)) throw new AiError('rateLimited', 429);
+      const shift = jobWindow(job);
+      const availability = availabilityStatus(candidate, shift, job.id);
+      const generated = await deps.generate(input, { mode: input.action, shift,
+        candidate: providerContext(job, candidate, availability, 'candidate-1') });
+      const result: AiResponse = { kind: input.action, insight: parseInsight(generated), availability };
       return respond(result);
     } catch (error) {
       const safe = error instanceof AiError ? error : new AiError('unavailable', 503);

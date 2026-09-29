@@ -4,12 +4,6 @@ export const insightSchema = {
   type: 'object', properties: { summary: { type: 'string' }, strengths: strings, gaps: strings, interviewQuestions: strings },
   required: ['summary','strengths','gaps','interviewQuestions'], additionalProperties: false,
 };
-export const replacementSchema = {
-  type: 'object', properties: { candidates: { type: 'array', items: {
-    type: 'object', properties: { candidateId: { type: 'string' }, reasons: strings, warnings: strings },
-    required: ['candidateId','reasons','warnings'], additionalProperties: false,
-  } } }, required: ['candidates'], additionalProperties: false,
-};
 export const safetyInstructions = [
   'You assist an employer reviewing student part-time job applicants. The employer alone makes hiring decisions.',
   'Do not accept, reject, assign, rank, score, or give match percentages. Do not recommend one person over another.',
@@ -18,10 +12,10 @@ export const safetyInstructions = [
   'Discuss only supplied work skills, experience, job requirements and server-computed availability.',
   'State missing evidence as unknown, not as lack of ability. Never invent experience, skills, availability, education, distance or qualifications.',
   'Availability is authoritative: available means declared coverage; conflict must be called out; unknown must not be claimed as available.',
-  'For replacement mode explain EVERY supplied candidate, preserve candidateId, and do not select, omit, rank or reorder them.',
+  'When information is missing, explain exactly what the employer should verify with the applicant.',
   'Return concise plain text (no markdown), at most 8 entries per list, at most 1200 characters per string.',
 ].join(' ');
-export async function callAiProvider(options: { key?: string; model?: string; action: string; language: string; data: unknown }, fetcher: typeof fetch = fetch): Promise<unknown> {
+export async function callAiProvider(options: { key?: string; model?: string; action: string; language: string; data: unknown; schema?: Record<string, unknown>; instructions?: string }, fetcher: typeof fetch = fetch): Promise<unknown> {
   if (!options.key || !options.model) throw new AiError('notConfigured', 503);
   let response: Response;
   try {
@@ -29,10 +23,10 @@ export async function callAiProvider(options: { key?: string; model?: string; ac
       method: 'POST', signal: AbortSignal.timeout(30000),
       headers: { 'x-goog-api-key': options.key, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: safetyInstructions + (options.language === 'th' ? ' Write all explanations in Thai.' : ' Write all explanations in English.') }] },
+        systemInstruction: { parts: [{ text: (options.instructions ?? safetyInstructions) + (options.language === 'th' ? ' Write EVERY string in the JSON response in natural Thai. Do not include English sentences, even when source data is English.' : ' Write all explanations in English.') }] },
         contents: [{ role: 'user', parts: [{ text: JSON.stringify(options.data) }] }],
         generationConfig: { candidateCount: 1, maxOutputTokens: 8192, responseMimeType: 'application/json',
-          responseJsonSchema: options.action === 'candidate-insight' ? insightSchema : replacementSchema },
+          responseJsonSchema: options.schema ?? insightSchema },
       }),
     });
   } catch (error) {

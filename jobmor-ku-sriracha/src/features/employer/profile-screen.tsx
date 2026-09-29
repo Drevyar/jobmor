@@ -9,7 +9,7 @@ import { getEmployerProfile, updateEmployerProfile } from './employer-service';
 import type { BusinessProfile, ProfileFormData } from './types';
 import { validateProfile } from './validation';
 import { errorKey, useEmployerData } from './use-employer-data';
-import { Button, Card, Copy, Field, LoadState, Notice, useEmployerText } from './ui';
+import { Button, Card, Copy, Field, LoadState, Notice, SuccessDialog, useEmployerText } from './ui';
 
 function ProfileForm({ profile, saved, cancel }: { profile: BusinessProfile; saved: () => void; cancel: () => void }) {
   const t = useEmployerText();
@@ -42,7 +42,7 @@ export default function EmployerProfileScreen() {
     catch { setLogoutError(translate('auth.logoutFailed')); setLogoutBusy(false); }
   };
   const profile = state.data;
-  return <Screen title={t('profile')}><Notice text={saved ? t('saved') : ''} /><LoadState {...state} retry={state.reload} />
+  return <Screen title={t('profile')}><Notice text={saved ? t('saved') : ''} /><SuccessDialog visible={saved} message={t('saved')} close={() => setSaved(false)} /><LoadState {...state} retry={state.reload} />
     {profile && (editing ? <ProfileForm profile={profile} cancel={() => setEditing(false)} saved={() => { setSaved(true); setEditing(false); state.reload(); }} />
       : <Card><Ionicons name="business-outline" size={42} color={colors.primary} /><Copy strong>{profile.company_name}</Copy>
         <Copy>{t('contact_name')}: {profile.profiles.display_name}</Copy><Copy>{t('contact_phone')}: {profile.profiles.phone}</Copy>

@@ -12,7 +12,7 @@
       ]
     }
   },
-  "exclude": ["node_modules", "dist", "supabase/functions/employer-ai"],
+  "exclude": ["node_modules", "dist", "supabase/functions/employer-ai", "supabase/functions/student-ai"],
   "include": [
     "**/*.ts",
     "**/*.tsx",

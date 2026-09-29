@@ -23,11 +23,18 @@ export async function saveWorkContext(skills: string, experience: string) {
   const { error } = await supabase.from('profiles').update({ work_skills: skills.trim(), work_experience: experience.trim() }).eq('id', id).select('id').single();
   if (error) throw new AiError('unavailable');
 }
-export async function addAvailability(window: TimeWindow) {
+export async function saveAvailability(window: TimeWindow) {
   if (!validWindow(window) || Date.parse(window.endsAt) <= Date.now()) throw new AiError('invalidShift');
   const id = await studentId();
-  const { error } = await supabase.from('student_availability').insert({ student_id: id, starts_at: window.startsAt, ends_at: window.endsAt });
-  if (error && error.code !== '23505') throw new AiError('unavailable');
+  const { data, error } = await supabase.from('student_availability')
+    .insert({ student_id: id, starts_at: window.startsAt, ends_at: window.endsAt })
+    .select('id,student_id,starts_at,ends_at').single();
+  // Saving the same window again should be safe after a retry or app restart.
+  if (error?.code === '23505') return;
+  if (error || !data || data.student_id !== id) {
+    if (__DEV__) console.warn('Availability insert failed:', error?.code ?? 'no-row-returned');
+    throw new AiError('availabilitySaveFailed');
+  }
 }
 export async function removeAvailability(id: string) {
   const student = await studentId();

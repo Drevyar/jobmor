@@ -1,9 +1,8 @@
 export type TimeWindow = { startsAt: string; endsAt: string };
 export type AiRequest = {
-  action: 'candidate-insight' | 'emergency-replacement';
+  action: 'candidate-insight';
   jobId: string;
   applicationId?: string;
-  shift?: TimeWindow;
   language: 'en' | 'th';
 };
 export type CandidateInsight = {
@@ -18,20 +17,7 @@ export type InsightResponse = {
   insight: CandidateInsight;
   availability: AvailabilityStatus;
 };
-export type ReplacementCandidate = {
-  candidateId: string;
-  applicationId: string;
-  name: string;
-  reasons: string[];
-  warnings: string[];
-};
-export type ReplacementResponse = {
-  kind: 'emergency-replacement';
-  shift: TimeWindow;
-  candidates: ReplacementCandidate[];
-  excluded: { missingAvailability: number; unavailable: number; overlapping: number; unknownCommitment: number };
-};
-export type AiResponse = InsightResponse | ReplacementResponse;
+export type AiResponse = InsightResponse;
 export class AiError extends Error {
   code: string;
   status: number;
@@ -57,11 +43,8 @@ export function bangkokWindow(date: string, start: string, end: string): TimeWin
 }
 export function parseAiRequest(value: unknown, now = Date.now()): AiRequest {
   if (!isRecord(value) || !isUuid(value.jobId) || !['en','th'].includes(String(value.language))) throw new AiError('invalidRequest');
-  if (value.action !== 'candidate-insight' && value.action !== 'emergency-replacement') throw new AiError('invalidRequest');
-  if (value.action === 'candidate-insight' && !isUuid(value.applicationId)) throw new AiError('invalidRequest');
-  if (value.action === 'emergency-replacement' && (!validWindow(value.shift) || Date.parse(value.shift.endsAt) <= now || Date.parse(value.shift.startsAt) > now + 31 * 86400000)) throw new AiError('invalidShift');
-  return { action: value.action, jobId: value.jobId, language: value.language as 'en' | 'th',
-    ...(value.action === 'candidate-insight' ? { applicationId: value.applicationId as string } : { shift: value.shift as TimeWindow }) };
+  if (value.action !== 'candidate-insight' || !isUuid(value.applicationId)) throw new AiError('invalidRequest');
+  return { action: value.action, jobId: value.jobId, language: value.language as 'en' | 'th', applicationId: value.applicationId };
 }
 function safeText(v: unknown): v is string {
   return typeof v === 'string' && v.trim().length > 0 && v.length <= 1200 && !/\d\s*[%％]|\b(score|ranking|ranked)\b/i.test(v);
@@ -73,15 +56,4 @@ export function parseInsight(v: unknown): CandidateInsight {
   if (!isRecord(v) || Object.keys(v).sort().join(',') !== 'gaps,interviewQuestions,strengths,summary' ||
       !safeText(v.summary) || !textList(v.strengths) || !textList(v.gaps) || !textList(v.interviewQuestions)) throw new AiError('invalidOutput', 502);
   return { summary: v.summary, strengths: v.strengths, gaps: v.gaps, interviewQuestions: v.interviewQuestions };
-}
-export function parseReplacementExplanations(v: unknown, ids: string[]) {
-  if (!isRecord(v) || Object.keys(v).join(',') !== 'candidates' || !Array.isArray(v.candidates) || v.candidates.length !== ids.length) throw new AiError('invalidOutput', 502);
-  const result = new Map<string, { reasons: string[]; warnings: string[] }>();
-  for (const item of v.candidates) {
-    if (!isRecord(item) || Object.keys(item).sort().join(',') !== 'candidateId,reasons,warnings' ||
-        typeof item.candidateId !== 'string' || !ids.includes(item.candidateId) || result.has(item.candidateId) ||
-        !textList(item.reasons) || !item.reasons.length || !textList(item.warnings)) throw new AiError('invalidOutput', 502);
-    result.set(item.candidateId, { reasons: item.reasons, warnings: item.warnings });
-  }
-  return result;
 }
