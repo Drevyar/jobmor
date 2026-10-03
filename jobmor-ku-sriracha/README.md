@@ -42,6 +42,11 @@ documentation explicitly says otherwise.
 
 ## Getting started
 
+Employer Candidate Insight setup:
+[Gemini Edge Function guide](docs/employer-ai.md).
+Student QuickMatch, Job Radar and Opportunity Discovery setup:
+[Student AI Job Finder guide](docs/student-ai.md).
+
 ### Prerequisites
 
 - Node.js 22 LTS

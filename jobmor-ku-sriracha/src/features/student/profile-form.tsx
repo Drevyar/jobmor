@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Button, Field, Notice, useEmployerText } from '@/features/employer/ui';
+import { Button, Field, Notice, SuccessDialog, useEmployerText } from '@/features/employer/ui';
 import { useTranslation } from '@/providers/localization-provider';
 import { getStudentProfile, updateStudentProfile } from './student-service';
 import { StudentLoadState } from './load-state';
@@ -27,6 +27,7 @@ export function StudentProfileForm() {
       <Field label={t('auth.email')} value={profile.email} disabled onChange={() => {}} />
       <Notice text={`${e('verification')}: ${e(profile.verification_status)}`} />
       <Notice text={error ? t(`studentFlow.${error}`) : ''} error /><Notice text={success ? t('studentFlow.profileSaved') : ''} />
+      <SuccessDialog visible={success} message={t('studentFlow.profileSaved')} close={() => setSuccess(false)} />
       {form ? <><Button label={e(busy ? 'saving' : 'save')} disabled={busy} onPress={() => void save()} /><Button label={e('cancel')} disabled={busy} onPress={() => { setForm(null); setError(''); }} /></>
         : <Button label={e('editProfile')} onPress={() => { setForm({ display_name: profile.display_name, phone: profile.phone }); setSuccess(false); setError(''); }} />}
     </>}

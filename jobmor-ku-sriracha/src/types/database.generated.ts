@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      student_job_preferences: {
+        Row: { student_id: string; preferred_category: string; preferred_area: string; minimum_wage: number; wage_type: string; updated_at: string }
+        Insert: { student_id: string; preferred_category?: string; preferred_area?: string; minimum_wage?: number; wage_type?: string; updated_at?: string }
+        Update: { student_id?: string; preferred_category?: string; preferred_area?: string; minimum_wage?: number; wage_type?: string; updated_at?: string }
+        Relationships: [{ foreignKeyName: "student_job_preferences_student_id_fkey"; columns: ["student_id"]; isOneToOne: true; referencedRelation: "profiles"; referencedColumns: ["id"] }]
+      }
+      student_job_interactions: {
+        Row: { student_id: string; job_id: string; interaction_type: string; created_at: string }
+        Insert: { student_id: string; job_id: string; interaction_type: string; created_at?: string }
+        Update: { student_id?: string; job_id?: string; interaction_type?: string; created_at?: string }
+        Relationships: [
+          { foreignKeyName: "student_job_interactions_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "student_job_interactions_job_id_fkey"; columns: ["job_id"]; isOneToOne: false; referencedRelation: "jobs"; referencedColumns: ["id"] },
+        ]
+      }
+      job_radar_recommendations: {
+        Row: { student_id: string; job_id: string; reasons: Json; status: string; created_at: string }
+        Insert: { student_id: string; job_id: string; reasons: Json; status?: string; created_at?: string }
+        Update: { student_id?: string; job_id?: string; reasons?: Json; status?: string; created_at?: string }
+        Relationships: [
+          { foreignKeyName: "job_radar_recommendations_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "job_radar_recommendations_job_id_fkey"; columns: ["job_id"]; isOneToOne: false; referencedRelation: "jobs"; referencedColumns: ["id"] },
+        ]
+      }
+      student_availability: {
+        Row: { id: string; student_id: string; starts_at: string; ends_at: string; created_at: string }
+        Insert: { id?: string; student_id: string; starts_at: string; ends_at: string; created_at?: string }
+        Update: { id?: string; student_id?: string; starts_at?: string; ends_at?: string; created_at?: string }
+        Relationships: [{ foreignKeyName: "student_availability_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }]
+      }
       saved_jobs: {
         Row: { student_id: string; job_id: string; created_at: string }
         Insert: { student_id: string; job_id: string; created_at?: string }
@@ -194,6 +224,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          work_skills: string
+          work_experience: string
           created_at: string
           display_name: string
           email: string
@@ -216,6 +248,8 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          work_skills?: string
+          work_experience?: string
           created_at?: string
           display_name?: string
           email?: string
@@ -287,6 +321,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_student_ai_budget: { Args: { target_student: string }; Returns: boolean }
+      consume_employer_ai_budget: { Args: { target_employer: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       admin_set_user_suspended: {
         Args: { should_suspend: boolean; target_profile: string }

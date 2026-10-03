@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">JobMor ER Diagram</title>
+  <desc id="desc">Slide-friendly overview of the JobMor database entities and relationships.</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#152C4A" flood-opacity=".10"/>
+    </filter>
+    <style>
+      text { font-family: "Aptos", "Noto Sans Thai", Tahoma, sans-serif; fill: #20334D; }
+      .title { font-size: 38px; font-weight: 700; fill: #102A43; }
+      .subtitle { font-size: 18px; fill: #62748A; }
+      .card { fill: #FFFFFF; stroke: #D8E2EC; stroke-width: 1.5; filter: url(#shadow); }
+      .head-blue { fill: #E8F1FC; }
+      .head-teal { fill: #E4F5F2; }
+      .head-amber { fill: #FFF3DE; }
+      .head-violet { fill: #F0EBFC; }
+      .head-gray { fill: #EEF2F6; }
+      .entity { font-size: 21px; font-weight: 700; fill: #173B66; }
+      .th-name { font-size: 14px; fill: #64778B; }
+      .field { font-size: 15px; fill: #31465F; }
+      .key { font-size: 11px; font-weight: 700; fill: #FFFFFF; }
+      .key-pk { fill: #2864A5; }
+      .key-fk { fill: #178577; }
+      .rel { fill: none; stroke: #7890A8; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+      .rel-dashed { fill: none; stroke: #B17A27; stroke-width: 2; stroke-dasharray: 7 7; stroke-linecap: round; }
+      .badge { fill: #F3F7FB; stroke: #DCE6EF; stroke-width: 1; }
+      .badge-text { font-size: 13px; font-weight: 600; fill: #48627C; }
+      .label-bg { fill: #FFFFFF; opacity: .94; }
+      .rel-label { font-size: 13px; font-weight: 600; fill: #536B83; }
+      .note-title { font-size: 15px; font-weight: 700; fill: #234564; }
+      .note { font-size: 13px; fill: #5A6F84; }
+      .legend { font-size: 13px; fill: #536B83; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F7FAFD"/>
+  <rect x="0" y="0" width="1600" height="9" fill="#2F70B7"/>
+  <text class="title" x="64" y="70">JobMor · ER Diagram</text>
+  <text class="subtitle" x="66" y="103">โครงสร้างข้อมูลหลักของแพลตฟอร์มหางานนักศึกษา · ภาพรวมสำหรับนำเสนอ</text>
+
+  <!-- Relationships are behind the entity cards. -->
+  <g aria-label="Relationships">
+    <!-- profiles to employer_profiles: shared primary key -->
+    <path class="rel" d="M500 258 H540 V205 H580"/>
+    <text class="rel-label" x="504" y="246">1 — 0..1</text>
+    <!-- employer_profiles to jobs -->
+    <path class="rel" d="M960 205 H1035"/>
+    <text class="rel-label" x="966" y="193">1 — N</text>
+    <!-- jobs to applications -->
+    <path class="rel" d="M1300 360 V455"/>
+    <text class="rel-label" x="1312" y="414">1 — N</text>
+    <!-- profiles to applications -->
+    <path class="rel" d="M460 520 V560 H1080 V565 H1090"/>
+    <rect class="label-bg" x="705" y="545" width="167" height="22" rx="8"/>
+    <text class="rel-label" x="714" y="561">ผู้สมัคร 1 — N ใบสมัคร</text>
+    <!-- profiles to saved_jobs -->
+    <path class="rel" d="M420 520 V575 H540 V654 H580"/>
+    <rect class="label-bg" x="430" y="579" width="132" height="21" rx="8"/>
+    <text class="rel-label" x="438" y="594">นักศึกษา 1 — N</text>
+    <!-- jobs to saved_jobs -->
+    <path class="rel" d="M1080 310 H1035 V816 H790 V790"/>
+    <rect class="label-bg" x="895" y="800" width="122" height="21" rx="8"/>
+    <text class="rel-label" x="903" y="815">งาน 1 — N</text>
+    <!-- profiles to availability -->
+    <path class="rel" d="M190 520 V620"/>
+    <text class="rel-label" x="202" y="581">1 — N</text>
+    <!-- profiles to reports (reporter) -->
+    <path class="rel" d="M500 430 H580"/>
+    <text class="rel-label" x="505" y="418">ผู้รายงาน 1 — N</text>
+    <!-- polymorphic report target: dashed semantic references -->
+    <path class="rel-dashed" d="M960 390 H1010 V340 H1080"/>
+    <text class="rel-label" x="964" y="378">target_type / target_id*</text>
+  </g>
+
+  <!-- PROFILES -->
+  <g>
+    <rect class="card" x="60" y="200" width="440" height="320" rx="16"/>
+    <path class="head-blue" d="M76 200 H484 Q500 200 500 216 V250 H60 V216 Q60 200 76 200Z"/>
+    <text class="entity" x="82" y="230">profiles</text>
+    <text class="th-name" x="192" y="229">บัญชีผู้ใช้และข้อมูลนักศึกษา</text>
+    <rect class="key-pk" x="82" y="266" width="31" height="19" rx="5"/><text class="key" x="88" y="280">PK</text>
+    <text class="field" x="124" y="281">id · uuid</text>
+    <text class="field" x="124" y="311">role · student / employer / admin</text>
+    <text class="field" x="124" y="341">display_name · phone · email</text>
+    <text class="field" x="124" y="371">verification_status</text>
+    <text class="field" x="124" y="401">work_skills · work_experience</text>
+    <text class="field" x="124" y="431">created_at · updated_at</text>
+    <rect class="badge" x="82" y="462" width="390" height="34" rx="9"/>
+    <text class="badge-text" x="96" y="484">นักศึกษา / นายจ้าง / ผู้ดูแล อยู่ในตารางเดียวกัน</text>
+  </g>
+
+  <!-- EMPLOYER PROFILES -->
+  <g>
+    <rect class="card" x="580" y="100" width="380" height="210" rx="16"/>
+    <path class="head-teal" d="M596 100 H944 Q960 100 960 116 V150 H580 V116 Q580 100 596 100Z"/>
+    <text class="entity" x="602" y="131">employer_profiles</text>
+    <text class="th-name" x="602" y="177">ข้อมูลบริษัทของนายจ้าง</text>
+    <rect class="key-pk" x="602" y="191" width="31" height="19" rx="5"/><text class="key" x="608" y="205">PK</text>
+    <rect class="key-fk" x="640" y="191" width="31" height="19" rx="5"/><text class="key" x="646" y="205">FK</text>
+    <text class="field" x="682" y="206">id → profiles.id</text>
+    <text class="field" x="602" y="237">company_name · business_category</text>
+    <text class="field" x="602" y="267">address</text>
+    <text class="note" x="602" y="292">หนึ่งโปรไฟล์ผู้ใช้มีข้อมูลบริษัทได้สูงสุดหนึ่งชุด</text>
+  </g>
+
+  <!-- JOBS -->
+  <g>
+    <rect class="card" x="1080" y="100" width="460" height="260" rx="16"/>
+    <path class="head-amber" d="M1096 100 H1524 Q1540 100 1540 116 V150 H1080 V116 Q1080 100 1096 100Z"/>
+    <text class="entity" x="1102" y="131">jobs</text>
+    <text class="th-name" x="1163" y="130">ประกาศงาน</text>
+    <rect class="key-pk" x="1102" y="166" width="31" height="19" rx="5"/><text class="key" x="1108" y="180">PK</text>
+    <text class="field" x="1144" y="181">id · uuid</text>
+    <rect class="key-fk" x="1102" y="194" width="31" height="19" rx="5"/><text class="key" x="1108" y="208">FK</text>
+    <text class="field" x="1144" y="209">employer_id → employer_profiles.id</text>
+    <text class="field" x="1102" y="239">title · description · requirements</text>
+    <text class="field" x="1102" y="269">wage · wage_type · location · category</text>
+    <text class="field" x="1102" y="299">working_date · shift · workers_required</text>
+    <text class="field" x="1102" y="329">contact_information · status</text>
+  </g>
+
+  <!-- REPORTS -->
+  <g>
+    <rect class="card" x="580" y="350" width="380" height="190" rx="16"/>
+    <path class="head-violet" d="M596 350 H944 Q960 350 960 366 V400 H580 V366 Q580 350 596 350Z"/>
+    <text class="entity" x="602" y="381">reports</text>
+    <text class="th-name" x="698" y="380">รายงานปัญหา</text>
+    <rect class="key-pk" x="602" y="416" width="31" height="19" rx="5"/><text class="key" x="608" y="430">PK</text>
+    <text class="field" x="644" y="431">id · reporter_id (FK → profiles.id)</text>
+    <text class="field" x="602" y="461">target_type · target_id*</text>
+    <text class="field" x="602" y="491">reason · status · resolved_by · resolved_at</text>
+    <text class="note" x="602" y="520">ผู้ใช้ส่งรายงานได้หลายรายการ</text>
+  </g>
+
+  <!-- APPLICATIONS -->
+  <g>
+    <rect class="card" x="1090" y="455" width="450" height="235" rx="16"/>
+    <path class="head-teal" d="M1106 455 H1524 Q1540 455 1540 471 V505 H1090 V471 Q1090 455 1106 455Z"/>
+    <text class="entity" x="1112" y="486">applications</text>
+    <text class="th-name" x="1257" y="485">ใบสมัครงาน · ตารางเชื่อม</text>
+    <rect class="key-pk" x="1112" y="521" width="31" height="19" rx="5"/><text class="key" x="1118" y="535">PK</text>
+    <text class="field" x="1154" y="536">id · uuid</text>
+    <rect class="key-fk" x="1112" y="549" width="31" height="19" rx="5"/><text class="key" x="1118" y="563">FK</text>
+    <text class="field" x="1154" y="564">job_id → jobs.id</text>
+    <rect class="key-fk" x="1112" y="577" width="31" height="19" rx="5"/><text class="key" x="1118" y="591">FK</text>
+    <text class="field" x="1154" y="592">applicant_id → profiles.id</text>
+    <text class="field" x="1112" y="622">message · status · created_at</text>
+    <rect class="badge" x="1112" y="644" width="402" height="29" rx="8"/>
+    <text class="badge-text" x="1125" y="664">นักศึกษาสมัครหลายงาน · งานหนึ่งมีหลายใบสมัคร</text>
+  </g>
+
+  <!-- SAVED JOBS -->
+  <g>
+    <rect class="card" x="580" y="600" width="420" height="190" rx="16"/>
+    <path class="head-blue" d="M596 600 H984 Q1000 600 1000 616 V650 H580 V616 Q580 600 596 600Z"/>
+    <text class="entity" x="602" y="631">saved_jobs</text>
+    <text class="th-name" x="728" y="630">งานที่บันทึกไว้ · ตารางเชื่อม</text>
+    <rect class="key-fk" x="602" y="666" width="31" height="19" rx="5"/><text class="key" x="608" y="680">PK</text>
+    <rect class="key-fk" x="640" y="666" width="31" height="19" rx="5"/><text class="key" x="646" y="680">FK</text>
+    <text class="field" x="682" y="681">student_id → profiles.id</text>
+    <rect class="key-fk" x="602" y="694" width="31" height="19" rx="5"/><text class="key" x="608" y="708">PK</text>
+    <rect class="key-fk" x="640" y="694" width="31" height="19" rx="5"/><text class="key" x="646" y="708">FK</text>
+    <text class="field" x="682" y="709">job_id → jobs.id</text>
+    <text class="note" x="602" y="762">PK คู่: student_id + job_id</text>
+  </g>
+
+  <!-- STUDENT AVAILABILITY -->
+  <g>
+    <rect class="card" x="60" y="620" width="420" height="160" rx="16"/>
+    <path class="head-gray" d="M76 620 H464 Q480 620 480 636 V670 H60 V636 Q60 620 76 620Z"/>
+    <text class="entity" x="82" y="651">student_availability</text>
+    <text class="th-name" x="82" y="697">ช่วงเวลาที่นักศึกษาสะดวกทำงาน</text>
+    <rect class="key-pk" x="82" y="713" width="31" height="19" rx="5"/><text class="key" x="88" y="727">PK</text>
+    <text class="field" x="124" y="728">id · student_id (FK → profiles.id)</text>
+    <text class="field" x="82" y="756">starts_at · ends_at</text>
+  </g>
+
+  <!-- Footer note and legend -->
+  <line x1="60" y1="835" x2="1540" y2="835" stroke="#DCE6EF" stroke-width="1.5"/>
+  <rect class="key-pk" x="64" y="852" width="31" height="19" rx="5"/><text class="key" x="70" y="866">PK</text>
+  <text class="legend" x="102" y="867">Primary key</text>
+  <rect class="key-fk" x="205" y="852" width="31" height="19" rx="5"/><text class="key" x="211" y="866">FK</text>
+  <text class="legend" x="243" y="867">Foreign key</text>
+  <path class="rel" d="M360 861 H408"/><text class="legend" x="418" y="867">ความสัมพันธ์ในฐานข้อมูล</text>
+  <path class="rel-dashed" d="M600 861 H648"/><text class="legend" x="658" y="867">การอ้างอิงเป้าหมายแบบ polymorphic</text>
+  <text class="note" x="1010" y="855">* reports.target_id อ้างถึง jobs หรือ profiles ตาม target_type</text>
+  <text class="note" x="1010" y="877">category เก็บเป็นข้อความ · admin เป็น role ใน profiles</text>
+</svg>

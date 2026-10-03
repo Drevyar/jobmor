@@ -34,6 +34,19 @@ export function Notice({ text, error = false }: { text: string; error?: boolean 
   const colors = useTheme();
   return text ? <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ color: error ? colors.danger : colors.primary, lineHeight: 22 }}>{text}</Text> : null;
 }
+export function SuccessDialog({ visible, message, close }: { visible: boolean; message: string; close: () => void }) {
+  const colors = useTheme();
+  const { language } = useTranslation();
+  return <Modal transparent visible={visible} animationType="fade" onRequestClose={close}>
+    <View style={styles.overlay}><View style={styles.dialog} accessibilityViewIsModal><Card>
+      <View style={{ alignItems: 'center', gap: 10 }}>
+        <Text style={{ color: colors.primary, fontSize: 32 }}>✓</Text>
+        <Copy strong>{message}</Copy>
+      </View>
+      <Button label={language === 'th' ? 'ตกลง' : 'OK'} variant="primary" onPress={close} />
+    </Card></View></View>
+  </Modal>;
+}
 export function LoadState({ loading, error, retry }: { loading: boolean; error: string; retry: () => void }) {
   const t = useEmployerText();
   return loading ? <ActivityIndicator accessibilityLabel={t('loading')} /> : error ? <Card><Notice text={t(error)} error /><Button label={t('retry')} onPress={retry} /></Card> : null;
