@@ -15,6 +15,8 @@ export const safetyInstructions = [
   'When information is missing, explain exactly what the employer should verify with the applicant.',
   'Return concise plain text (no markdown), at most 8 entries per list, at most 1200 characters per string.',
 ].join(' ');
+// จุดส่งข้อมูลออกไป Gemini จริง: Edge Function ส่ง context มาใน options.data
+// POST generateContent พร้อม JSON และคีย์ฝั่ง server → อ่านคำตอบ → parse JSON คืนให้ handler ตรวจต่อ
 export async function callAiProvider(options: { key?: string; model?: string; action: string; language: string; data: unknown; schema?: Record<string, unknown>; instructions?: string }, fetcher: typeof fetch = fetch): Promise<unknown> {
   if (!options.key || !options.model) throw new AiError('notConfigured', 503);
   let response: Response;

@@ -25,6 +25,8 @@ export default function RootLayout() {
   );
 }
 
+// รับ session/role จาก AuthProvider; Stack.Protected เปิดกลุ่มหน้า auth/student/employer/admin ตาม guard
+// guard ควบคุมการเข้าหน้าในแอป ส่วนสิทธิ์อ่าน/เขียนข้อมูลตรวจที่ backend ด้วย
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { session, role, isLoading } = useAuth();
   const segments = useSegments() as string[];

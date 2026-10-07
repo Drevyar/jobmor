@@ -43,6 +43,8 @@ export function StudentJobActions({ job, changed }: { job: JobState; changed: (j
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  // onPress ของแต่ละปุ่มส่ง action มาที่นี่ → เรียก student-service เพื่อเขียนฐานข้อมูล
+  // changed ส่งผลสำเร็จกลับให้หน้าที่ครอบ component อัปเดตข้อมูลที่แสดง
   const run = async (action: 'apply' | 'withdraw' | 'save') => {
     if (lock.current) return;
     lock.current = true; setBusy(true); setError(''); setNotice('');

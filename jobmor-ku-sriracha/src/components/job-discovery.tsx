@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { EmptySection, Screen } from '@/components/screen';
 import { useTheme } from '@/hooks/use-theme';
@@ -12,7 +12,7 @@ import { StudentLoadState } from '@/features/student/load-state';
 import { getStudentJobs } from '@/features/student/student-service';
 import { useStudentData } from '@/features/student/use-student-data';
 import { filterJobs } from '@/features/student/validation';
-import { QuickMatchPanel, RadarPanel, DiscoveryPanel } from '@/features/student-ai/panels';
+import { QuickMatchPanel } from '@/features/student-ai/panels';
 
 const emptyFilters = { search: '', category: '', date: '', area: '', time: '', wage: '' };
 const categoryMap: Record<string, string> = { all: '', food: 'food-beverage', retail: 'retail', event: 'events' };
@@ -31,7 +31,6 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
   const state = useStudentData(getStudentJobs);
   const [filters, setFilters] = useState({...emptyFilters,category:explore&&typeof params.category==='string'?params.category:''});
   const [expanded, setExpanded] = useState('');
-  const [activeAi, setActiveAi] = useState<'radar' | 'discovery' | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
   const [refreshStatus, setRefreshStatus] = useState<'idle' | 'running' | 'done'>('idle');
   useFocusEffect(useCallback(() => { setRefreshStatus('idle'); }, []));
@@ -49,7 +48,7 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
   return (
     <Screen title={t(explore ? 'student.exploreTitle' : 'student.homeTitle')} subtitle={t('studentFlow.searchHint')}>
       <View style={[styles.searchPanel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <View style={styles.searchRow}><View style={[styles.search, { backgroundColor: colors.background, borderColor: searchFocused ? colors.primary : colors.border }]}>
+        <View style={[styles.search, { backgroundColor: colors.background, borderColor: searchFocused ? colors.primary : colors.border }]}>
           <Ionicons name="search-outline" size={21} color={colors.primary} />
           <TextInput
             accessibilityLabel={t('studentFlow.search')} value={filters.search}
@@ -58,13 +57,7 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
             placeholder={t('studentFlow.search')} placeholderTextColor={colors.textMuted}
             returnKeyType="search" style={[styles.searchInput, { color: colors.text }]}
           />
-        </View>{!explore && <View style={styles.aiActions}>
-          {(['radar', 'discovery'] as const).map(key => <Pressable key={key} accessibilityRole="button" accessibilityLabel={t(`studentAi.${key}`)}
-            accessibilityState={{ selected: activeAi === key }} onPress={() => setActiveAi(activeAi === key ? null : key)}
-            style={[styles.aiIcon, { borderColor: colors.border, backgroundColor: activeAi === key ? colors.primarySoft : colors.background }]}>
-            <Ionicons name={key === 'radar' ? 'notifications-outline' : 'compass-outline'} size={21} color={colors.primary} />
-          </Pressable>)}
-        </View>}</View>
+        </View>
         <Text style={[styles.filterLabel, { color: colors.textMuted }]}>{t('studentFlow.filters')}</Text>
         <View style={styles.chips}>
           {chipKeys.map(chip => {
@@ -89,10 +82,7 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
           value={filters[key]} numeric={key === 'wage'} onChange={value => setFilters(current => ({ ...current, [key]: value }))} />)}
         {Object.values(filters).some(Boolean) && <Button variant="ghost" label={t('studentFlow.clearFilters')} onPress={() => setFilters(emptyFilters)} />}
       </View>
-      {!explore && <><QuickMatchPanel compact />
-        {activeAi === 'radar' && <RadarPanel />}
-        {activeAi === 'discovery' && <DiscoveryPanel />}
-      </>}
+      {!explore && <QuickMatchPanel compact />}
       <View style={styles.toolbar}>
         <View style={styles.sectionHeading}>
           <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.text }]}>{t(Object.values(filters).some(Boolean) ? 'studentFlow.results' : 'studentFlow.availableJobs')}</Text>
@@ -115,10 +105,7 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
 
 const styles = StyleSheet.create({
   searchPanel: { padding: 16, borderWidth: 1, borderRadius: 18, gap: 14 },
-  searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  search: { flex: 1, minWidth: 0, minHeight: 52, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  aiActions: { flexDirection: 'row', gap: 6 },
-  aiIcon: { width: 42, height: 42, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  search: { minHeight: 52, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
   searchInput: { flex: 1, minWidth: 0, fontSize: 14, minHeight: 50 },
   filterLabel: { fontSize: 12, fontWeight: '600', lineHeight: 18 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

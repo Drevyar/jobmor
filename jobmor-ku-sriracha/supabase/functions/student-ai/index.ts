@@ -8,6 +8,7 @@ import type { Preferences, StudentContext, StudentJob } from '../_shared/student
 
 const key = Deno.env.get('GEMINI_API_KEY');
 const model = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.5-flash-lite';
+// client ฝั่ง server ใช้ service role; authorize ตรวจผู้ใช้ และ context จำกัดข้อมูลส่วนตัวด้วย id นิสิต
 function admin() {
   const url = Deno.env.get('SUPABASE_URL'); const secret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!url || !secret) throw new AiError('notConfigured',503);
@@ -80,4 +81,5 @@ const handler = createStudentHandler({
     if(result.error) throw new AiError('unavailable',503);
   },
 });
+// เปิด endpoint student-ai ให้คำขอจากแอปเข้าสู่ handler
 Deno.serve(handler);

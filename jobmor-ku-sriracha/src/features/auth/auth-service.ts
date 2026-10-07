@@ -20,6 +20,9 @@ function getAuthParams(url: string) {
   return params;
 }
 
+// รับ form จาก register-form.tsx → จัดรูปแบบข้อมูล → ส่งให้ Supabase Auth
+// signUp สร้าง auth.users; trigger handle_new_user ใน 202609200001_auth_foundation.sql
+// นำ metadata ไปสร้าง profiles และ employer_profiles (เฉพาะนายจ้าง) ในฐานข้อมูล
 export async function registerAccount(form: RegistrationForm) {
   const commonMetadata = {
     role: form.role,
@@ -60,6 +63,8 @@ export async function resendSignupConfirmation(email: string) {
   if (error) throw error;
 }
 
+// รับ email/password จาก login-form.tsx → Auth ตรวจบัญชีและคืน session
+// AuthProvider ฟังการเปลี่ยน session แล้วอ่าน role จาก profiles เพื่อให้ RootNavigator เลือกหน้าตามบทบาท
 export async function loginAccount(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.trim().toLowerCase(),
@@ -75,6 +80,7 @@ export async function logoutAccount() {
   if (error) throw error;
 }
 
+// รับลิงก์ยืนยันจากหน้า callback → อ่าน code/token → ส่งให้ Auth เพื่อสร้าง session
 export async function confirmEmailFromUrl(url: string) {
   const params = getAuthParams(url);
   const errorDescription = params.get('error_description') ?? params.get('error');
@@ -113,6 +119,7 @@ export async function confirmEmailFromUrl(url: string) {
   throw new Error('The confirmation link is missing or expired. Check the email link and the Supabase redirect settings.');
 }
 
+// ส่งอีเมลให้ Auth ออกลิงก์กู้รหัสผ่าน; ลิงก์กลับไปหน้า reset-password
 export async function requestPasswordReset(email: string) {
   const redirectTo = Linking.createURL('reset-password');
   const { error } = await supabase.auth.resetPasswordForEmail(
@@ -150,6 +157,7 @@ export async function createRecoverySessionFromUrl(url: string) {
   if (error) throw error;
 }
 
+// ส่งรหัสผ่านใหม่ให้ Auth ภายใต้ recovery session แล้วให้ออกจากระบบเพื่อเข้าสู่ระบบใหม่
 export async function updatePassword(password: string) {
   const { error } = await supabase.auth.updateUser({ password });
   if (error) throw error;

@@ -28,6 +28,7 @@ export function useStudentData<T>(load: () => Promise<T>) {
     if (!account || role !== 'student') { setError('signInRequired'); setLoading(false); return false; }
     setLoading(true);
     try {
+      // load คือฟังก์ชัน service ที่หน้าจอส่งมา → รอข้อมูลจาก Supabase → setData ให้ React แสดงผลใหม่
       const result = await load();
       if (request !== sequence.current) return false;
       setData(result);

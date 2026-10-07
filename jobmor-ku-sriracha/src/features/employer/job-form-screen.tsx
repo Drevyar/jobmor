@@ -12,6 +12,7 @@ function JobForm({ initial, jobId }: { initial: JobFormData; jobId?: string }) {
   const [form, setForm] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // ช่อง Field เรียก change เมื่อพิมพ์ → เก็บค่าใน form ของ React; ยังไม่ส่งฐานข้อมูลจนกดบันทึก
   const change = (key: keyof JobFormData, value: string) => setForm(current => ({ ...current, [key]: value }));
   const submit = async () => {
     if (busy) return;
@@ -19,6 +20,7 @@ function JobForm({ initial, jobId }: { initial: JobFormData; jobId?: string }) {
     if (validation) { setError(validation); return; }
     setBusy(true); setError('');
     try {
+      // ส่ง form → employer-service.saveJob → ตาราง jobs; await รอผลสำเร็จก่อนเปลี่ยนหน้า
       const job = await saveJob(form, jobId);
       router.replace(jobId ? { pathname: '/(employer)/job-detail', params: { jobId: job.id, notice: 'saved' } }
         : { pathname: '/(employer)/jobs', params: { notice: 'saved' } });

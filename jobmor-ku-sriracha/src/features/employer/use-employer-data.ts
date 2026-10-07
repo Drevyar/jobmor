@@ -23,6 +23,7 @@ export function useEmployerData<T>(load: () => Promise<T>) {
     if (!account) { setData(null); setError('signInRequired'); setLoading(false); return; }
     const request = ++sequence.current;
     setData(null); setLoading(true); setError('');
+    // เมื่อเปิดหน้านี้ เรียก service ผ่าน load → ผลลัพธ์เข้า setData → หน้าจอแสดงข้อมูลใหม่
     void load().then(result => {
       if (request === sequence.current) setData(result);
     }).catch((reason: unknown) => {
