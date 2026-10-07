@@ -23,6 +23,7 @@ export function LoginForm({ onBack }: { onBack: () => void }) {
   const colors = useTheme();
   const { t, toggleLanguage } = useTranslation();
   const { error: sessionError } = useAuth();
+  // TextInput.onChangeText เก็บค่าลง state; submit ส่ง email/password ไป auth-service.loginAccount
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

@@ -7,6 +7,8 @@ export class StudentError extends Error {
 }
 export type StudentJob = Tables<'jobs'> & { application: Tables<'applications'> | null; saved: boolean };
 
+// ตรวจผู้ใช้กับ Auth และอ่าน role/verification_status จาก profiles ก่อนทำรายการ
+// การตรวจในแอปช่วยแจ้งข้อผิดพลาด; RLS ฝั่งฐานข้อมูลเป็นผู้บังคับสิทธิ์จริง
 async function studentId() {
   const { data, error } = await supabase.auth.getUser();
   if (error) throw error;
@@ -19,6 +21,8 @@ async function studentId() {
   return data.user.id;
 }
 
+// อ่าน jobs + applications ของนิสิต + saved_jobs ของนิสิตพร้อมกัน
+// จับคู่ด้วย job_id แล้วคืนข้อมูลให้ useStudentData และหน้ารายการงานนำไปแสดง
 export async function getStudentCollection() {
   const id = await studentId();
   const [jobs, applications, saved] = await Promise.all([
@@ -44,6 +48,7 @@ export async function getStudentJobs(): Promise<StudentJob[]> {
   return (await getStudentCollection()).jobs;
 }
 
+// รับ jobId จากหน้ารายละเอียด → อ่าน jobs แล้วแนบใบสมัครและสถานะบันทึกของผู้ใช้ปัจจุบัน
 export async function getStudentJob(id: string) {
   const owner = await studentId();
   const { data: job, error } = await supabase.from('jobs').select('*').eq('id', id).maybeSingle();
@@ -58,6 +63,8 @@ export async function getStudentJob(id: string) {
   return { ...job, application: application.data, saved: !!saved.data };
 }
 
+// ปุ่มสมัครใน job-card.tsx ส่ง jobId มาที่นี่ → INSERT applications
+// applicant_id มาจากบัญชีที่ตรวจแล้ว; คืนแถวใบสมัครให้หน้าจออัปเดตสถานะ (23505 = สมัครซ้ำ)
 export async function applyForJob(jobId: string) {
   const id = await studentId();
   const { data, error } = await supabase.from('applications').insert({ job_id: jobId, applicant_id: id }).select().single();
@@ -66,6 +73,7 @@ export async function applyForJob(jobId: string) {
   return data;
 }
 
+// ถอนใบสมัคร: DELETE applications เฉพาะ id ของผู้ใช้และสถานะ pending
 export async function withdrawApplication(applicationId: string) {
   const id = await studentId();
   const { data, error } = await supabase.from('applications').delete().eq('id', applicationId)
@@ -74,6 +82,7 @@ export async function withdrawApplication(applicationId: string) {
   if (!data) throw new StudentError('cannotWithdraw');
 }
 
+// saved=true → INSERT saved_jobs; false → DELETE โดยจับคู่ student_id และ job_id
 export async function setJobSaved(jobId: string, saved: boolean) {
   const id = await studentId();
   const { error } = saved
@@ -83,6 +92,7 @@ export async function setJobSaved(jobId: string, saved: boolean) {
   if (error && !(saved && error.code === '23505')) throw error;
 }
 
+// อ่าน profiles ของผู้ใช้ปัจจุบันกลับไปเติมแบบฟอร์มโปรไฟล์
 export async function getStudentProfile() {
   const id = await studentId();
   const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
@@ -90,6 +100,7 @@ export async function getStudentProfile() {
   return data;
 }
 
+// profile-form.tsx ส่งชื่อ/โทรศัพท์ → validate → trim → UPDATE profiles → คืนแถวที่บันทึก
 export async function updateStudentProfile(form: { display_name: string; phone: string }) {
   const validation = validateStudentProfile(form);
   if (validation) throw new StudentError(validation);
@@ -100,6 +111,7 @@ export async function updateStudentProfile(form: { display_name: string; phone: 
   return data;
 }
 
+// report-job-form.tsx ส่ง jobId/เหตุผล → INSERT reports; ฝั่งแอดมินอ่านผ่าน loadAdminReports
 export async function submitJobReport(jobId: string, reason: string) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError) throw authError;

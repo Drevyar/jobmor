@@ -31,6 +31,7 @@ function isUserRole(value: unknown): value is UserRole {
   return typeof value === 'string' && ALL_ROLES.includes(value as UserRole);
 }
 
+// หลังได้รับ session อ่าน profiles.role จากฐานข้อมูล → เก็บใน context ให้ RootNavigator ใช้เลือกกลุ่มหน้า
 async function resolveRole(session: Session | null) {
   if (!session) return null;
 
@@ -106,6 +107,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [applySession, retryCount]);
 
   useEffect(() => {
+    // จุดรับ session ใหม่จาก login/logout → applySession → resolveRole → อัปเดต state ของทั้งแอป
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       // Supabase advises keeping this callback synchronous. Resolve the profile after it returns.
       setTimeout(() => applySession(session), 0);

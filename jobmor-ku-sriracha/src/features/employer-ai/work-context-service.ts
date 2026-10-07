@@ -8,6 +8,7 @@ async function studentId() {
   if (profile.error || profile.data.role !== 'student' || profile.data.verification_status !== 'verified') throw new AiError('forbidden');
   return data.user.id;
 }
+// แม้ไฟล์อยู่ใน employer-ai แต่ข้อมูลนี้เป็นของนิสิต: อ่านทักษะ/ประสบการณ์จาก profiles และเวลาว่างจาก student_availability
 export async function getWorkContext() {
   const id = await studentId();
   const [profile, windows] = await Promise.all([
@@ -17,12 +18,14 @@ export async function getWorkContext() {
   if (profile.error || windows.error) throw new AiError('unavailable');
   return { profile: profile.data, windows: windows.data };
 }
+// ฟอร์มทักษะ/ประสบการณ์ → ตรวจความยาว → UPDATE profiles ของนิสิตปัจจุบัน
 export async function saveWorkContext(skills: string, experience: string) {
   if (skills.length > 1000 || experience.length > 3000) throw new AiError('invalidWork');
   const id = await studentId();
   const { error } = await supabase.from('profiles').update({ work_skills: skills.trim(), work_experience: experience.trim() }).eq('id', id).select('id').single();
   if (error) throw new AiError('unavailable');
 }
+// รับ startsAt/endsAt → ตรวจช่วงเวลา → INSERT student_availability โดยแปลงชื่อ field เป็น starts_at/ends_at
 export async function saveAvailability(window: TimeWindow) {
   if (!validWindow(window) || Date.parse(window.endsAt) <= Date.now()) throw new AiError('invalidShift');
   const id = await studentId();
@@ -36,6 +39,7 @@ export async function saveAvailability(window: TimeWindow) {
     throw new AiError('availabilitySaveFailed');
   }
 }
+// ลบเวลาว่างใน student_availability เฉพาะ id ที่เป็นของนิสิตปัจจุบัน
 export async function removeAvailability(id: string) {
   const student = await studentId();
   const { error } = await supabase.from('student_availability').delete().eq('id', id).eq('student_id', student).select('id').single();
