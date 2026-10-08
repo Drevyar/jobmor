@@ -14,45 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      student_job_preferences: {
-        Row: { student_id: string; preferred_category: string; preferred_area: string; minimum_wage: number; wage_type: string; updated_at: string }
-        Insert: { student_id: string; preferred_category?: string; preferred_area?: string; minimum_wage?: number; wage_type?: string; updated_at?: string }
-        Update: { student_id?: string; preferred_category?: string; preferred_area?: string; minimum_wage?: number; wage_type?: string; updated_at?: string }
-        Relationships: [{ foreignKeyName: "student_job_preferences_student_id_fkey"; columns: ["student_id"]; isOneToOne: true; referencedRelation: "profiles"; referencedColumns: ["id"] }]
-      }
-      student_job_interactions: {
-        Row: { student_id: string; job_id: string; interaction_type: string; created_at: string }
-        Insert: { student_id: string; job_id: string; interaction_type: string; created_at?: string }
-        Update: { student_id?: string; job_id?: string; interaction_type?: string; created_at?: string }
-        Relationships: [
-          { foreignKeyName: "student_job_interactions_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "student_job_interactions_job_id_fkey"; columns: ["job_id"]; isOneToOne: false; referencedRelation: "jobs"; referencedColumns: ["id"] },
-        ]
-      }
-      job_radar_recommendations: {
-        Row: { student_id: string; job_id: string; reasons: Json; status: string; created_at: string }
-        Insert: { student_id: string; job_id: string; reasons: Json; status?: string; created_at?: string }
-        Update: { student_id?: string; job_id?: string; reasons?: Json; status?: string; created_at?: string }
-        Relationships: [
-          { foreignKeyName: "job_radar_recommendations_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "job_radar_recommendations_job_id_fkey"; columns: ["job_id"]; isOneToOne: false; referencedRelation: "jobs"; referencedColumns: ["id"] },
-        ]
-      }
-      student_availability: {
-        Row: { id: string; student_id: string; starts_at: string; ends_at: string; created_at: string }
-        Insert: { id?: string; student_id: string; starts_at: string; ends_at: string; created_at?: string }
-        Update: { id?: string; student_id?: string; starts_at?: string; ends_at?: string; created_at?: string }
-        Relationships: [{ foreignKeyName: "student_availability_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }]
-      }
-      saved_jobs: {
-        Row: { student_id: string; job_id: string; created_at: string }
-        Insert: { student_id: string; job_id: string; created_at?: string }
-        Update: { student_id?: string; job_id?: string; created_at?: string }
-        Relationships: [
-          { foreignKeyName: "saved_jobs_job_id_fkey"; columns: ["job_id"]; isOneToOne: false; referencedRelation: "jobs"; referencedColumns: ["id"] },
-          { foreignKeyName: "saved_jobs_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-        ]
-      }
       applications: {
         Row: {
           applicant_id: string
@@ -157,6 +118,45 @@ export type Database = {
           },
         ]
       }
+      job_radar_recommendations: {
+        Row: {
+          created_at: string
+          job_id: string
+          reasons: Json
+          status: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          job_id: string
+          reasons: Json
+          status?: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          job_id?: string
+          reasons?: Json
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_radar_recommendations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_radar_recommendations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           category: string
@@ -165,12 +165,17 @@ export type Database = {
           description: string
           employer_id: string
           id: string
+          instant_accept: boolean
+          is_urgent: boolean
+          latitude: number | null
           location: string
+          longitude: number | null
           requirements: string
           shift: string
           status: string
           title: string
           updated_at: string
+          urgent_radius_km: number
           wage: number
           wage_type: string
           workers_required: number
@@ -183,12 +188,17 @@ export type Database = {
           description: string
           employer_id: string
           id?: string
+          instant_accept?: boolean
+          is_urgent?: boolean
+          latitude?: number | null
           location: string
+          longitude?: number | null
           requirements?: string
           shift: string
           status?: string
           title: string
           updated_at?: string
+          urgent_radius_km?: number
           wage: number
           wage_type: string
           workers_required: number
@@ -201,12 +211,17 @@ export type Database = {
           description?: string
           employer_id?: string
           id?: string
+          instant_accept?: boolean
+          is_urgent?: boolean
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           requirements?: string
           shift?: string
           status?: string
           title?: string
           updated_at?: string
+          urgent_radius_km?: number
           wage?: number
           wage_type?: string
           workers_required?: number
@@ -224,8 +239,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          work_skills: string
-          work_experience: string
           created_at: string
           display_name: string
           email: string
@@ -235,6 +248,8 @@ export type Database = {
           updated_at: string
           verification_status: Database["public"]["Enums"]["verification_status"]
           verified_at: string | null
+          work_experience: string
+          work_skills: string
         }
         Insert: {
           created_at?: string
@@ -246,10 +261,10 @@ export type Database = {
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["verification_status"]
           verified_at?: string | null
+          work_experience?: string
+          work_skills?: string
         }
         Update: {
-          work_skills?: string
-          work_experience?: string
           created_at?: string
           display_name?: string
           email?: string
@@ -259,6 +274,8 @@ export type Database = {
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["verification_status"]
           verified_at?: string | null
+          work_experience?: string
+          work_skills?: string
         }
         Relationships: []
       }
@@ -316,20 +333,308 @@ export type Database = {
           },
         ]
       }
+      saved_jobs: {
+        Row: {
+          created_at: string
+          job_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          job_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          job_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_jobs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_jobs_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_availability: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          starts_at: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          starts_at: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          starts_at?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_availability_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_job_interactions: {
+        Row: {
+          created_at: string
+          interaction_type: string
+          job_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          interaction_type: string
+          job_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          interaction_type?: string
+          job_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_job_interactions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_job_interactions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_job_locations: {
+        Row: {
+          latitude: number
+          longitude: number
+          radius_km: number
+          student_id: string
+          travel_mode: string
+          updated_at: string
+          urgent_enabled: boolean
+        }
+        Insert: {
+          latitude: number
+          longitude: number
+          radius_km?: number
+          student_id: string
+          travel_mode?: string
+          updated_at?: string
+          urgent_enabled?: boolean
+        }
+        Update: {
+          latitude?: number
+          longitude?: number
+          radius_km?: number
+          student_id?: string
+          travel_mode?: string
+          updated_at?: string
+          urgent_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_job_locations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_job_preferences: {
+        Row: {
+          minimum_wage: number
+          preferred_area: string
+          preferred_category: string
+          student_id: string
+          updated_at: string
+          wage_type: string
+        }
+        Insert: {
+          minimum_wage?: number
+          preferred_area?: string
+          preferred_category?: string
+          student_id: string
+          updated_at?: string
+          wage_type?: string
+        }
+        Update: {
+          minimum_wage?: number
+          preferred_area?: string
+          preferred_category?: string
+          student_id?: string
+          updated_at?: string
+          wage_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_job_preferences_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_push_devices: {
+        Row: {
+          created_at: string
+          id: string
+          student_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          student_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          student_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_push_devices_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      urgent_job_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          read_at: string | null
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          read_at?: string | null
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          read_at?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "urgent_job_notifications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "urgent_job_notifications_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      consume_student_ai_budget: { Args: { target_student: string }; Returns: boolean }
-      consume_employer_ai_budget: { Args: { target_employer: string }; Returns: boolean }
-      is_admin: { Args: never; Returns: boolean }
+      accept_urgent_job: {
+        Args: { target_job: string }
+        Returns: {
+          applicant_id: string
+          created_at: string
+          id: string
+          job_id: string
+          message: string
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "applications"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_set_user_suspended: {
         Args: { should_suspend: boolean; target_profile: string }
         Returns: undefined
       }
       admin_update_report: {
         Args: { new_status: string; target_report: string }
+        Returns: undefined
+      }
+      claim_urgent_push: {
+        Args: { target_job?: string }
+        Returns: {
+          delivery_id: string
+          job_id: string
+          title: string
+          token: string
+        }[]
+      }
+      consume_employer_ai_budget: {
+        Args: { target_employer: string }
+        Returns: boolean
+      }
+      consume_student_ai_budget: {
+        Args: { target_student: string }
+        Returns: boolean
+      }
+      finish_urgent_push: {
+        Args: {
+          code?: string
+          delivery: string
+          next_status: string
+          ticket?: string
+        }
+        Returns: undefined
+      }
+      is_admin: { Args: never; Returns: boolean }
+      register_urgent_device: {
+        Args: { push_token: string }
         Returns: undefined
       }
       update_employer_profile: {
@@ -341,6 +646,17 @@ export type Database = {
           contact_phone: string
         }
         Returns: undefined
+      }
+      urgent_push_receipts: {
+        Args: never
+        Returns: {
+          delivery_id: string
+          ticket_id: string
+        }[]
+      }
+      urgent_worker_authorized: {
+        Args: { worker_token: string }
+        Returns: boolean
       }
     }
     Enums: {

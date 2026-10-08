@@ -13,6 +13,7 @@ import { getStudentJobs } from '@/features/student/student-service';
 import { useStudentData } from '@/features/student/use-student-data';
 import { filterJobs } from '@/features/student/validation';
 import { QuickMatchPanel } from '@/features/student-ai/panels';
+import {isUrgentJob} from '../../supabase/functions/_shared/urgent-job-tag';
 
 const emptyFilters = { search: '', category: '', date: '', area: '', time: '', wage: '' };
 const categoryMap: Record<string, string> = { all: '', food: 'food-beverage', retail: 'retail', event: 'events' };
@@ -32,6 +33,7 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
   const [filters, setFilters] = useState({...emptyFilters,category:explore&&typeof params.category==='string'?params.category:''});
   const [expanded, setExpanded] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
+  const [urgentOnly,setUrgentOnly]=useState(false);
   const [refreshStatus, setRefreshStatus] = useState<'idle' | 'running' | 'done'>('idle');
   useFocusEffect(useCallback(() => { setRefreshStatus('idle'); }, []));
   const refreshJobs = async () => {
@@ -42,7 +44,8 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
   };
   const activeJobs = state.data?.filter(job => job.status === 'active') ?? [];
   const categories = [...new Set([...categoryOptions.map(option => option.value), ...activeJobs.map(job => job.category)])];
-  const jobs = filterJobs(activeJobs, filters);
+  const jobs = filterJobs(activeJobs, filters).filter(job=>!urgentOnly||isUrgentJob(job))
+    .sort((a,b)=>Number(isUrgentJob(b))-Number(isUrgentJob(a)));
   const chipKeys = explore ? ['date', 'category', 'area', 'time', 'wage'] : ['all', 'food', 'retail', 'event'];
 
   return (
@@ -82,13 +85,14 @@ export function JobDiscovery({ explore = false }: { explore?: boolean }) {
           value={filters[key]} numeric={key === 'wage'} onChange={value => setFilters(current => ({ ...current, [key]: value }))} />)}
         {Object.values(filters).some(Boolean) && <Button variant="ghost" label={t('studentFlow.clearFilters')} onPress={() => setFilters(emptyFilters)} />}
       </View>
-      {!explore && <QuickMatchPanel compact />}
+      {!explore && <QuickMatchPanel compact onApplied={()=>void state.reload()} />}
       <View style={styles.toolbar}>
         <View style={styles.sectionHeading}>
           <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.text }]}>{t(Object.values(filters).some(Boolean) ? 'studentFlow.results' : 'studentFlow.availableJobs')}</Text>
           {state.data && <Text style={[styles.count, { color: colors.textMuted }]}>{jobs.length}</Text>}
         </View>
         <Button variant="ghost" label={t('studentFlow.savedJobs')} onPress={() => router.push('/(student)/saved-jobs')} />
+        <Button label={t('studentFlow.urgentOnly')} selected={urgentOnly} onPress={()=>setUrgentOnly(!urgentOnly)}/>
       </View>
       <StudentLoadState {...state} />
       {state.data && <>

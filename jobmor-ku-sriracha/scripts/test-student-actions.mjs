@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { canWithdraw } from '../src/features/student/validation.ts';
+import {isUrgentJob,stripUrgentTitle} from '../supabase/functions/_shared/urgent-job-tag.ts';
 
 // Node-only component handler tests; browser/native rendering is checked separately.
 const source = ts.transpileModule(readFileSync(new URL('../src/features/student/job-card.tsx', import.meta.url), 'utf8'), {
@@ -33,6 +34,7 @@ function harness(initial, overrides = {}) {
     if (name === './student-service') return service;
     if (name === './use-student-data') return { studentErrorKey: () => 'error' };
     if (name === './validation') return { canWithdraw };
+    if (name.endsWith('/urgent-job-tag')) return {isUrgentJob,stripUrgentTitle};
     throw new Error(`Unexpected import ${name}`);
   } });
   function render() {
