@@ -8,6 +8,7 @@ import { useTranslation } from '@/providers/localization-provider';
 import { applyForJob, setJobSaved, withdrawApplication, type StudentJob } from './student-service';
 import { studentErrorKey } from './use-student-data';
 import { canWithdraw } from './validation';
+import {isUrgentJob,stripUrgentTitle} from '../../../supabase/functions/_shared/urgent-job-tag';
 
 export function JobCard({ job, detail = false, changed }: { job: StudentJob; detail?: boolean; changed: (job: StudentJob) => void }) {
   const e = useEmployerText();
@@ -17,9 +18,10 @@ export function JobCard({ job, detail = false, changed }: { job: StudentJob; det
   const categoryLabel = ['food', 'retail', 'hospitality', 'education', 'events', 'office', 'technology', 'logistics'].includes(categoryKey)
     ? t(`auth.categories.${categoryKey}`) : job.category;
   return <Card>
+    {isUrgentJob(job)&&<Copy strong>⚡ {t('studentFlow.urgentJob')}</Copy>}
     <View style={cardStyles.heading}>
       <View style={[cardStyles.icon, { backgroundColor: colors.primarySoft }]}><Ionicons name="briefcase-outline" size={24} color={colors.primary} /></View>
-      <View style={cardStyles.titleGroup}><Text style={[cardStyles.category, { color: colors.textMuted }]}>{categoryLabel}</Text><Text style={[cardStyles.title, { color: colors.text }]}>{job.title}</Text></View>
+      <View style={cardStyles.titleGroup}><Text style={[cardStyles.category, { color: colors.textMuted }]}>{categoryLabel}</Text><Text style={[cardStyles.title, { color: colors.text }]}>{stripUrgentTitle(job.title)}</Text></View>
     </View>
     <View style={cardStyles.wageRow}>
       <Text style={[cardStyles.wage, { color: colors.primary }]}>{job.wage.toLocaleString()} <Text style={cardStyles.unit}>THB / {e(job.wage_type)}</Text></Text>

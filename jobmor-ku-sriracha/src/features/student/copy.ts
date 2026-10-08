@@ -17,6 +17,7 @@ export const studentCopy = {
     search: 'Search jobs, descriptions, or locations', minimumWage: 'Minimum wage (THB, any pay unit)',
     clearFilters: 'Clear filters', unavailable: 'Job no longer available',
     refreshJobs: 'Refresh jobs', refreshingJobs: 'Refreshing jobs…', jobsRefreshed: 'Job list updated. There may be no new jobs yet.',
+    urgentJob:'Urgent job',urgentOnly:'Urgent jobs only',
   },
   th: {
     availableJobs: 'งานที่เปิดรับสมัคร', results: 'งานที่ตรงกับการค้นหา', filters: 'ตัวกรอง', searchHint: 'ค้นหางานที่เข้ากับตารางเรียนของคุณ',
@@ -36,5 +37,6 @@ export const studentCopy = {
     search: 'ค้นหาชื่องาน รายละเอียด หรือสถานที่', minimumWage: 'ค่าจ้างขั้นต่ำ (บาท รวมทุกหน่วยค่าจ้าง)',
     clearFilters: 'ล้างตัวกรอง', unavailable: 'งานนี้ไม่พร้อมใช้งานแล้ว',
     refreshJobs: 'รีเฟรชงาน', refreshingJobs: 'กำลังรีเฟรชงาน…', jobsRefreshed: 'อัปเดตรายการงานแล้ว ขณะนี้อาจยังไม่มีงานใหม่',
+    urgentJob:'งานด่วน',urgentOnly:'เฉพาะงานด่วน',
   },
 };

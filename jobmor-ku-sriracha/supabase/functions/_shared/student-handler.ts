@@ -1,6 +1,7 @@
 import { AiError, isRecord, isUuid } from './ai-contracts.ts';
 import { getEligibleJobs, parseDiscovery, parseRecommendations } from './student-recommendations.ts';
 import type { EligibleJob, StudentContext, StudentJob } from './student-recommendations.ts';
+import {isUrgentJob} from './urgent-job-tag.ts';
 
 export type StudentAction = 'quickmatch' | 'radar' | 'discover' | 'skip';
 export type StudentInput = { action: StudentAction; language: 'en' | 'th'; jobId?: string };
@@ -37,6 +38,23 @@ export function createStudentHandler(deps: StudentDeps) {
       const { student, jobs } = await deps.context(id);
       const now = deps.now?.() ?? Date.now();
       const eligible = getEligibleJobs(jobs,student,now);
+      const missing = { availability: !student.windows.length, skills: !student.skills.trim() && !student.experience.trim() };
+      // Demo QuickMatch uses factual filters only: no provider key/quota dependency.
+      if(input.action==='quickmatch') {
+        const skills=student.skills.toLocaleLowerCase().split(/[,;\n]+/).map(value=>value.trim()).filter(value=>value.length>=2);
+        const matches=(row:EligibleJob)=>skills.filter(skill=>`${row.job.title} ${row.job.description} ${row.job.requirements}`.toLocaleLowerCase().includes(skill));
+        const row=eligible.find(item=>matches(item).length>0)??eligible[0];
+        if(!row)return respond({kind:'quickmatch',job:null,reasons:[],availability:'unknown',needsProfile:false,missing});
+        const th=input.language==='th';
+        const reasons=[row.availability==='available'
+          ? (th?`เวลาว่างที่บันทึกไว้ครอบคลุมกะ ${row.job.shift}`:`Your saved availability covers ${row.job.shift}.`)
+          : (th?'ยังไม่มีเวลาว่างที่บันทึกไว้ กรุณาตรวจเวลากะก่อนสมัคร':'Availability is not saved. Check the shift before applying.')];
+        if(student.preferences.preferred_category)reasons.push(th?'ตรงกับหมวดงานที่เลือกไว้':'Matches your selected category.');
+        if(student.preferences.preferred_area)reasons.push(th?`ตรงกับพื้นที่ที่เลือกไว้: ${row.job.location}`:`Matches your selected area: ${row.job.location}.`);
+        if(matches(row).length)reasons.push(th?`ทักษะที่ระบุตรงกับข้อมูลประกาศ: ${matches(row).slice(0,3).join(', ')}`:`Stated skills appear in this posting: ${matches(row).slice(0,3).join(', ')}.`);
+        if(isUrgentJob(row.job))reasons.push(th?'ประกาศนี้เป็นงานด่วนรายชั่วโมง':'This is an urgent hourly posting.');
+        return respond({kind:'quickmatch',job:row.job,reasons,availability:row.availability,needsProfile:false,missing});
+      }
       if (input.action === 'discover') {
         if (!student.experience.trim()) return respond({ kind: 'discover', inferredSkills: [], jobCategories: [], needsExperience: true });
         // Discovery explores categories beyond the student's current preference.
@@ -49,14 +67,9 @@ export function createStudentHandler(deps: StudentDeps) {
         const parsed = parseDiscovery(rawResult,categories);
         return respond({ kind: 'discover', ...parsed, needsExperience: false });
       }
-      const missing = { availability: !student.windows.length, skills: !student.skills.trim() && !student.experience.trim() };
-      if (missing.availability && missing.skills && !student.preferences.preferred_category && !student.preferences.preferred_area) return respond(input.action === 'quickmatch'
-        ? { kind: 'quickmatch', job: null, reasons: [], availability: 'unknown', needsProfile: true, missing }
-        : { kind: 'radar', items: [], missing });
-      if (!eligible.length) return respond(input.action === 'quickmatch'
-        ? { kind: 'quickmatch', job: null, reasons: [], availability: 'unknown', needsProfile: false, missing }
-        : { kind: 'radar', items: [], missing });
-      const existing = input.action === 'radar' ? await deps.radarRead(id) : [];
+      if (missing.availability && missing.skills && !student.preferences.preferred_category && !student.preferences.preferred_area) return respond({ kind: 'radar', items: [], missing });
+      if (!eligible.length) return respond({ kind: 'radar', items: [], missing });
+      const existing = await deps.radarRead(id);
       const pool = eligible.filter(row => !existing.some(saved => saved.job_id === row.job.id)).slice(0,8);
       let generated: { jobId: string; reasons: string[] }[] = [];
       if (pool.length) {
@@ -65,11 +78,6 @@ export function createStudentHandler(deps: StudentDeps) {
           student: { skills: student.skills.slice(0,1000), experience: student.experience.slice(0,3000) },
           jobs: pool.map(row => ({ jobId: row.job.id, title: row.job.title, description: row.job.description.slice(0,3000), requirements: row.job.requirements.slice(0,1500), category: row.job.category, availability: row.availability, factualReasons: row.reasons })) });
         generated = parseRecommendations(rawResult,pool.map(row => row.job.id));
-      }
-      if (input.action === 'quickmatch') {
-        if (!generated.length) return respond({ kind: 'quickmatch', job: null, reasons: [], availability: 'unknown', needsProfile: false, missing });
-        const row = pool.find(item => item.job.id === generated[0].jobId)!;
-        return respond({ kind: 'quickmatch', job: row.job, reasons: [...row.reasons,...generated[0].reasons].slice(0,8), availability: row.availability, needsProfile: false, missing });
       }
       if (generated.length) await deps.radarSave(id,generated.slice(0,3).map(row => ({ job_id: row.jobId, reasons: row.reasons })));
       const stored = await deps.radarRead(id);

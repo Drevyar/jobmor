@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import type { Application, ApplicationStatus, BusinessProfile, JobFormData, ProfileFormData } from './types';
 import { validateJob, validateProfile } from './validation';
+import {taggedJobTitle} from '../../../supabase/functions/_shared/urgent-job-tag';
 
 export class EmployerError extends Error {
   constructor(public key: string) { super(key); }
@@ -42,8 +43,9 @@ export async function saveJob(form: JobFormData, id?: string) {
   if (validation) throw new EmployerError(validation);
   const owner = await employerId();
   // Explicit allowlist: never allow form data to change ownership or timestamps.
+  // Demo urgency is a title tag; do not enable the historical native Push/instant DB fields.
   const values = {
-    title: form.title.trim(), description: form.description.trim(), requirements: form.requirements.trim(),
+    title: taggedJobTitle(form.title,!!form.is_urgent), description: form.description.trim(), requirements: form.requirements.trim(),
     wage: Number(form.wage), wage_type: form.wage_type, location: form.location.trim(),
     category: form.category.trim(), working_date: form.working_date, shift: form.shift.trim(),
     workers_required: Number(form.workers_required), contact_information: form.contact_information.trim(), status: form.status,

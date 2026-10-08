@@ -1,5 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
+import {Switch,View} from 'react-native';
+import {isUrgentJob,stripUrgentTitle} from '../../../supabase/functions/_shared/urgent-job-tag';
 import { Screen } from '@/components/screen';
 import { EmployerError, getJobById, saveJob } from './employer-service';
 import type { JobFormData } from './types';
@@ -30,11 +32,14 @@ function JobForm({ initial, jobId }: { initial: JobFormData; jobId?: string }) {
   return <><Copy>{t('formHint')}</Copy>
     {Object.entries(limits).map(([field, limit]) => {
       const key = field as keyof typeof limits;
-      return <Field key={key} label={t(key)} value={form[key]} onChange={value => change(key, value)} maxLength={limit}
+      return <Field key={key} label={t(key)} value={form[key]} onChange={value => change(key, value)} maxLength={key==='title'&&form.is_urgent?151:limit}
         disabled={busy} multiline={key === 'description' || key === 'requirements'} numeric={key === 'wage' || key === 'workers_required'} />;
     })}
     <Copy>{t('wage_type')}</Copy><Choices values={['hour','day','month','job']} value={form.wage_type} onChange={value => change('wage_type', value)} disabled={busy} />
     <Copy>{t('status')}</Copy><Choices values={['draft','active','closed']} value={form.status} onChange={value => change('status', value)} disabled={busy} />
+    <View><Copy strong>{t('urgent')}</Copy><Switch accessibilityLabel={t('urgent')} disabled={busy} value={!!form.is_urgent}
+      onValueChange={is_urgent=>setForm(current=>({...current,is_urgent,wage_type:is_urgent?'hour':current.wage_type}))}/></View>
+    {form.is_urgent&&<Copy>{t('urgentHint')}</Copy>}
     <Notice text={error ? t(error) : ''} error /><Button label={t(busy ? 'saving' : 'save')} disabled={busy} onPress={() => void submit()} />
     <Button label={t('cancel')} disabled={busy} onPress={() => router.replace('/(employer)/jobs')} />
   </>;
@@ -45,7 +50,7 @@ export default function JobFormScreen({ editing = false }: { editing?: boolean }
     if (!editing) return { ...emptyJob };
     if (!jobId) throw new EmployerError('jobNotFound');
     const job = await getJobById(jobId);
-    return { ...job, wage: String(job.wage), workers_required: String(job.workers_required) };
+    return { ...job, title:stripUrgentTitle(job.title),is_urgent:isUrgentJob(job), wage: String(job.wage), workers_required: String(job.workers_required) };
   }, [editing, jobId]));
   return <Screen title={t(editing ? 'edit' : 'create')}><LoadState {...state} retry={state.reload} />
     {state.data && <JobForm initial={state.data} jobId={editing ? jobId : undefined} />}

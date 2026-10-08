@@ -37,7 +37,7 @@ const handler = createStudentHandler({
       client.from('profiles').select('work_skills,work_experience').eq('id',id).single(),
       client.from('student_job_preferences').select('preferred_category,preferred_area,minimum_wage,wage_type').eq('student_id',id).maybeSingle<Preferences>(),
       client.from('student_availability').select('starts_at,ends_at',{count:'exact'}).eq('student_id',id).gte('ends_at',new Date().toISOString()).limit(1000).returns<Window[]>(),
-      client.from('jobs').select('id,title,description,requirements,category,location,wage,wage_type,working_date,shift,workers_required,status,created_at',{count:'exact'}).eq('status','active').limit(500).returns<StudentJob[]>(),
+      client.from('jobs').select('id,title,description,requirements,category,location,wage,wage_type,working_date,shift,workers_required,status,created_at,is_urgent',{count:'exact'}).eq('status','active').limit(500).returns<StudentJob[]>(),
       client.from('applications').select('job_id,applicant_id,status,jobs!inner(working_date,shift)',{count:'exact'}).eq('applicant_id',id).limit(1000).returns<Application[]>(),
       client.from('applications').select('job_id,applicant_id,status',{count:'exact'}).eq('status','accepted').limit(5000).returns<Application[]>(),
       client.from('student_job_interactions').select('job_id,interaction_type',{count:'exact'}).eq('student_id',id).limit(1000).returns<{job_id:string;interaction_type:string}[]>(),

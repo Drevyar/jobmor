@@ -6,6 +6,7 @@ import { deleteJob, getEmployerJobs } from './employer-service';
 import type { Job } from './types';
 import { errorKey, useEmployerData } from './use-employer-data';
 import { Button, Card, Copy, DeleteDialog, LoadState, Notice, SuccessDialog, styles, useEmployerText } from './ui';
+import {isUrgentJob,stripUrgentTitle} from '../../../supabase/functions/_shared/urgent-job-tag';
 
 export function JobActions({ job, onDeleted }: { job: Job; onDeleted: () => void }) {
   const t = useEmployerText();
@@ -27,7 +28,7 @@ export function JobActions({ job, onDeleted }: { job: Job; onDeleted: () => void
 }
 export function JobSummary({ job }: { job: Job }) {
   const t = useEmployerText();
-  return <><Copy strong>{job.title}</Copy><Copy>{job.wage.toLocaleString()} THB / {t(job.wage_type)} · {t(job.status)}</Copy>
+  return <>{isUrgentJob(job)&&<Copy strong>⚡ {t('urgent')}</Copy>}<Copy strong>{stripUrgentTitle(job.title)}</Copy><Copy>{job.wage.toLocaleString()} THB / {t(job.wage_type)} · {t(job.status)}</Copy>
     <Copy>{job.location}</Copy><Copy>{job.working_date} · {job.shift}</Copy></>;
 }
 export default function JobsScreen() {

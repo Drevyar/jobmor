@@ -5,9 +5,8 @@ and local employers. It provides dedicated workspaces for students, employers,
 and platform administrators.
 
 The project is under active development. Authentication, role guards, student
-job flows, and employer CRUD are implemented. Admin metrics and account/job
-lists use live Supabase data; report handling and moderation changes are not
-implemented. Messaging remains a prototype.
+job flows, and employer CRUD are implemented. Admin metrics, account/job lists,
+account suspension and report review use Supabase data. Messaging remains a prototype.
 
 ## Project status
 
@@ -23,10 +22,8 @@ implemented. Messaging remains a prototype.
 | Unit and PostgreSQL authorization tests | Implemented; run with `npm test` |
 | Native and hosted end-to-end tests | Pending |
 
-The role workspaces currently establish layout, navigation, and empty states.
-Search fields, filters, dashboards, applications, messages, reports, and other
-controls do not imply completed business functionality unless their feature
-documentation explicitly says otherwise.
+For the current presentation scope and verification limits, see the Expo Go demo
+guide below. Optional unfinished features are not part of the main demo flow.
 
 ## Technology
 
@@ -44,8 +41,11 @@ documentation explicitly says otherwise.
 
 Employer Candidate Insight setup:
 [Gemini Edge Function guide](docs/employer-ai.md).
-Student QuickMatch, Job Radar and Opportunity Discovery setup:
+Student QuickMatch setup:
 [Student AI Job Finder guide](docs/student-ai.md).
+
+Stable Expo Go demo and simple urgent hourly jobs:
+[Demo instructions](docs/expo-go-demo.md).
 
 ### Prerequisites
 
