@@ -132,6 +132,7 @@ export function RegisterForm({ initialRole, onBack }: { initialRole: Registratio
     setSubmitting(true);
     setSubmitError('');
     try {
+      // ข้อมูลที่ TextInput เก็บใน form ผ่าน validateRegistration แล้ว → auth-service → Supabase Auth
       await registerAccount(form);
       console.log('[RegisterForm] registration request accepted. Email delivery is not guaranteed.');
       setRegisteredEmail(form.email.trim().toLowerCase());

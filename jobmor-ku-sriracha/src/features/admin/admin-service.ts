@@ -5,6 +5,7 @@ export class AdminServiceError extends Error {
   constructor(public key: string) { super(key); }
 }
 
+// เรียก SQL RPC is_admin ตรวจสิทธิ์ก่อนอ่านข้อมูลสำหรับหน้าแอดมิน
 async function requireAdmin() {
   const { data, error } = await supabase.rpc('is_admin');
   if (error) throw error;
@@ -46,6 +47,7 @@ export type AdminReportRecord = {
   created_at: string;
 };
 
+// อ่านเฉพาะจำนวนจาก profiles/jobs/reports แล้วคืนตัวเลขให้ AdminDashboardScreen
 export async function loadAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
   await requireAdmin();
   const [students, employers, activeJobs, pendingEmailConfirmations, pendingReports] = await Promise.all([
@@ -69,6 +71,7 @@ export async function loadAdminDashboardMetrics(): Promise<AdminDashboardMetrics
   };
 }
 
+// อ่าน profiles → คืนรายการผู้ใช้ให้ AdminUsersScreen
 export async function loadAdminUsers(): Promise<AdminUserRecord[]> {
   await requireAdmin();
   const { data, error } = await supabase
@@ -80,6 +83,7 @@ export async function loadAdminUsers(): Promise<AdminUserRecord[]> {
   return data;
 }
 
+// อ่าน jobs กับ employer_profiles แล้วจับคู่ employer_id เพื่อแสดงชื่อบริษัทใน AdminJobsScreen
 export async function loadAdminJobs(): Promise<AdminJobRecord[]> {
   await requireAdmin();
   const [jobsResult, employersResult] = await Promise.all([
@@ -106,6 +110,7 @@ export async function loadAdminJobs(): Promise<AdminJobRecord[]> {
   }));
 }
 
+// ส่ง id ผู้ใช้/สถานะระงับไป RPC admin_set_user_suspended; SQL ตรวจสิทธิ์แอดมินและอัปเดต profiles
 export async function setAdminUserSuspended(userId: string, suspended: boolean): Promise<void> {
   const { error } = await supabase.rpc('admin_set_user_suspended', {
     target_profile: userId,
@@ -114,6 +119,7 @@ export async function setAdminUserSuspended(userId: string, suspended: boolean):
   if (error) throw error;
 }
 
+// อ่าน reports และจับคู่ profiles/jobs เพื่อแสดงผู้แจ้งกับเป้าหมายใน AdminReportsScreen
 export async function loadAdminReports(): Promise<AdminReportRecord[]> {
   await requireAdmin();
   const [reportsResult, profilesResult, jobsResult] = await Promise.all([
@@ -156,6 +162,7 @@ export async function loadAdminReports(): Promise<AdminReportRecord[]> {
   });
 }
 
+// ส่ง id รายงาน/สถานะไป RPC admin_update_report; SQL ตรวจสิทธิ์และอัปเดต reports
 export async function updateAdminReport(reportId: string, status: 'resolved' | 'dismissed'): Promise<void> {
   const { error } = await supabase.rpc('admin_update_report', {
     target_report: reportId,

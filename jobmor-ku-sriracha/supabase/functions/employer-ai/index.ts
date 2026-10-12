@@ -7,6 +7,8 @@ import { callAiProvider } from '../_shared/ai-provider.ts';
 const env = (name: string) => Deno.env.get(name);
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-2.5-flash';
+// client ฝั่ง Edge Function ใช้ service role จาก environment ของ server
+// จึงต้องตรวจ token, role และเจ้าของงานใน authorize ก่อนอ่านข้อมูลที่มีสิทธิ์สูง
 function adminClient() {
   const url = env('SUPABASE_URL'); const key = env('SUPABASE_SERVICE_ROLE_KEY');
   if (!url || !key) throw new AiError('notConfigured', 503);
@@ -72,4 +74,5 @@ const handler = createAiHandler({
   },
   generate: (request, data) => callAiProvider({ key: GEMINI_API_KEY, model: GEMINI_MODEL, action: request.action, language: request.language, data }),
 });
+// เปิด endpoint employer-ai ให้คำขอจากแอปเข้าสู่ handler
 Deno.serve(handler);

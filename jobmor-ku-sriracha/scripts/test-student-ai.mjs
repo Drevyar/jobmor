@@ -43,18 +43,27 @@ test('missing availability is explicit uncertainty, not invented coverage',()=>{
   assert.equal(result[0].availability,'unknown'); assert.match(result[0].reasons[0],/confirm/i);
 });
 
+test('simple urgent recommendation needs no coordinates, provider or notification device',async()=>{
+  const {handler,calls}=setup({context:async()=>({student:student(),jobs:[{...job,id:second,title:'[URGENT] Cafe helper'},job]}),budget:async()=>{throw Error('must not use AI quota')},generate:async()=>{throw Error('must not call AI')}});
+  const response=await handler(request('quickmatch'));
+  const body=await response.json();
+  assert.equal(response.status,200);assert.equal(body.job.id,second);assert.equal(body.availability,'available');assert.equal(calls.length,0);
+  assert.match(body.reasons.join(' '),/urgent/i);
+});
+
 test('QuickMatch returns exactly one eligible job and keeps confirmation in client flow',async()=>{
   const {handler,calls}=setup(); const response=await handler(request('quickmatch')); const body=await response.json();
   assert.equal(response.status,200); assert.equal(body.kind,'quickmatch'); assert.equal(body.job.id,first);
-  assert.equal(body.availability,'available'); assert.equal(calls.length,1);
-  assert.deepEqual(Object.keys(calls[0].data.student).sort(),['experience','skills']);
+  assert.equal(body.availability,'available'); assert.equal(calls.length,0);
+  assert.match(body.reasons.join(' '),/availability|skills/i);
 });
 
 test('no eligible job or missing profile avoids provider usage',async()=>{
   const {handler,calls}=setup({context:async()=>({student:{...student(),applied:new Set([first,second])},jobs:[job,{...job,id:second}]})});
   assert.equal((await (await handler(request('quickmatch'))).json()).job,null); assert.equal(calls.length,0);
   const empty=setup({context:async()=>({student:{...student(),skills:'',experience:'',windows:[]},jobs:[job]})});
-  assert.equal((await (await empty.handler(request('quickmatch'))).json()).needsProfile,true); assert.equal(empty.calls.length,0);
+  const basic=await (await empty.handler(request('quickmatch'))).json();
+  assert.equal(basic.needsProfile,false);assert.equal(basic.job.id,first);assert.equal(basic.availability,'unknown');assert.equal(empty.calls.length,0);
   assert.deepEqual((await (await empty.handler(request('radar'))).json()).items,[]); assert.equal(empty.calls.length,0);
 });
 
@@ -83,11 +92,11 @@ test('Discovery can suggest another live category despite a preferred category',
   assert.equal((await response.json()).jobCategories[0].category,'retail');
 });
 
-test('unauthorized and missing configuration fail safely before exposing jobs',async()=>{
+test('unauthorized is denied and QuickMatch works without AI configuration',async()=>{
   const noAuth=setup({authorize:async()=>{throw new AiError('forbidden',403)},context:async()=>{throw Error('must not read')}});
   assert.equal((await noAuth.handler(request('quickmatch'))).status,403);
   const noConfig=setup({generate:async()=>{throw new AiError('notConfigured',503)}});
-  assert.deepEqual(await (await noConfig.handler(request('quickmatch'))).json(),{error:'notConfigured'});
+  assert.equal((await (await noConfig.handler(request('quickmatch'))).json()).job.id,first);
   assert.equal((await noConfig.handler(new Request('http://localhost',{method:'POST',body:'{}'}))).status,401);
 });
 
@@ -111,10 +120,10 @@ test('short experience is handled without inventing categories or skills',async(
   assert.deepEqual(await (await invalid.handler(request('discover'))).json(),{error:'invalidOutput'});
 });
 
-test('empty model recommendation is a real no-match result, never a fabricated job',async()=>{
+test('QuickMatch returns a real eligible job without relying on model output',async()=>{
   const {handler}=setup({generate:async()=>({recommendations:[]})});
   const response=await handler(request('quickmatch'));
-  assert.equal(response.status,200); assert.equal((await response.json()).job,null);
+  assert.equal(response.status,200); assert.equal((await response.json()).job.id,first);
 });
 
 test('Student recommendation uses Gemini structured JSON server-side',async()=>{

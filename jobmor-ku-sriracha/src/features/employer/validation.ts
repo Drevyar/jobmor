@@ -1,4 +1,6 @@
 import type { JobFormData, ProfileFormData } from './types';
+import { jobWindow } from '../../../supabase/functions/_shared/ai-matching.ts';
+import {taggedJobTitle} from '../../../supabase/functions/_shared/urgent-job-tag.ts';
 
 export const emptyJob: JobFormData = {
   title: '', description: '', requirements: '', wage: '', wage_type: 'day',
@@ -18,6 +20,11 @@ export function validateJob(form: JobFormData): string | null {
   const date = new Date(`${form.working_date}T00:00:00Z`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(form.working_date) || !Number.isFinite(date.getTime()) || date.getUTCFullYear() < 1 || date.toISOString().slice(0, 10) !== form.working_date) return 'invalidDate';
   if (!['active', 'closed', 'draft'].includes(form.status) || !['hour', 'day', 'month', 'job'].includes(form.wage_type)) return 'required';
+  if(form.is_urgent){
+    if(taggedJobTitle(form.title,true).length>160)return 'required';
+    const window=jobWindow(form);
+    if(form.wage_type!=='hour'||!window||(form.status==='active'&&Date.parse(window.startsAt)<=Date.now())) return 'invalidUrgent';
+  }
   return null;
 }
 

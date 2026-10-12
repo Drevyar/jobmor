@@ -10,7 +10,7 @@ import type { DiscoveryResult, PreferenceForm, QuickResult, RadarResult } from '
 const errorCode=(error:unknown)=>error instanceof Error&&'code' in error&&typeof error.code==='string'?error.code:'unavailable';
 const Reasons=({items}:{items:string[]})=><>{items.map((reason,i)=><Copy key={i}>• {reason}</Copy>)}</>;
 
-export function QuickMatchPanel({ compact = false }: { compact?: boolean } = {}){
+export function QuickMatchPanel({ compact = false,onApplied }: { compact?: boolean;onApplied?:()=>void } = {}){
   const {t,language}=useTranslation(),a=(key:string)=>t('studentAi.'+key);
   const [result,setResult]=useState<QuickResult|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[confirm,setConfirm]=useState(false);
   const locked=useRef(false);
@@ -19,7 +19,7 @@ export function QuickMatchPanel({ compact = false }: { compact?: boolean } = {})
   const skip=async()=>{if(locked.current||!result?.job)return;locked.current=true;setBusy(true);setError('');
     try{await studentAi('skip',language,result.job.id);setResult(null)}catch{setError('skipFailed')}finally{locked.current=false;setBusy(false)}};
   const apply=async()=>{if(locked.current||!result?.job)return;locked.current=true;setBusy(true);setError('');
-    try{await applyForJob(result.job.id);setConfirm(false);setResult(null);setNotice('applied')}catch(e){setError(e instanceof Error&&'key' in e&&e.key==='duplicate'?'invalidRequest':'unavailable')}finally{locked.current=false;setBusy(false)}};
+    try{await applyForJob(result.job.id);setConfirm(false);setResult(null);setNotice('applied');onApplied?.()}catch(e){setError(e instanceof Error&&'key' in e&&e.key==='duplicate'?'invalidRequest':'unavailable')}finally{locked.current=false;setBusy(false)}};
   return <Card><Copy strong>{a('quick')}</Copy>{!compact&&<Copy>{a('quickHint')}</Copy>}<Button label={busy?a('finding'):a('find')} disabled={busy} onPress={()=>void run()}/>
     {busy&&<ActivityIndicator accessibilityLabel={a('finding')}/>}<Notice text={error?a(error):notice?a(notice):''} error={!!error}/>
     {result&&(result.needsProfile?<Copy>{a('needsProfile')}</Copy>:!result.job?<Copy>{a('noJob')}</Copy>:<>

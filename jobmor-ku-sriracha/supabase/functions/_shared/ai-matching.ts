@@ -7,7 +7,7 @@ export type CandidateContext = {
   commitments: { jobId: string; workingDate: string; shift: string }[];
 };
 export function jobWindow(job: { working_date: string; shift: string }): TimeWindow | null {
-  const times = job.shift.trim().match(/^(\d{2}:\d{2})\s*[-–]\s*(\d{2}:\d{2})$/);
+  const times = job.shift.trim().replace(/(\d{2})\.(\d{2})/g,'$1:$2').match(/^(\d{2}:\d{2})\s*[-–—]\s*(\d{2}:\d{2})$/);
   return times ? bangkokWindow(job.working_date, times[1], times[2]) : null;
 }
 export function overlaps(a: TimeWindow, b: TimeWindow) {

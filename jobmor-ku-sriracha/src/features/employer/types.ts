@@ -3,9 +3,10 @@ import type { Tables } from '@/types/database.generated';
 export type Job = Tables<'jobs'>;
 export type JobStatus = 'active' | 'closed' | 'draft';
 export type ApplicationStatus = 'pending' | 'accepted' | 'rejected';
-export type JobFormData = Omit<Job, 'id' | 'employer_id' | 'created_at' | 'updated_at' | 'wage' | 'workers_required'> & {
+export type JobFormData = Omit<Job, 'id' | 'employer_id' | 'created_at' | 'updated_at' | 'wage' | 'workers_required' | 'latitude' | 'longitude' | 'urgent_radius_km' | 'is_urgent' | 'instant_accept'> & {
   wage: string;
   workers_required: string;
+  is_urgent?: boolean;
 };
 export type JobSummary = Job & { applications: { count: number }[] };
 export type Application = Tables<'applications'> & {

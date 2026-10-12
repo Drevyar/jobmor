@@ -12,6 +12,8 @@ export type AiDependencies = {
 };
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
+// รับ HTTP จาก functions.invoke('employer-ai'): อ่าน body → ตรวจคำขอ/สิทธิ์/เจ้าของงาน
+// อ่านผู้สมัคร → คำนวณเวลาว่าง → เรียก generate → ตรวจคำตอบ → คืน JSON ให้แอป
 export function createAiHandler(deps: AiDependencies) {
   return async (request: Request): Promise<Response> => {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });

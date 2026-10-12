@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import type { Application, ApplicationStatus, BusinessProfile, JobFormData, ProfileFormData } from './types';
 import { validateJob, validateProfile } from './validation';
+import {taggedJobTitle} from '../../../supabase/functions/_shared/urgent-job-tag';
 
 export class EmployerError extends Error {
   constructor(public key: string) { super(key); }
@@ -17,6 +18,7 @@ async function employerId() {
   return data.user.id;
 }
 
+// อ่าน jobs ที่ employer_id ตรงกับบัญชีปัจจุบัน พร้อมจำนวน applications ของแต่ละงาน
 export async function getEmployerJobs() {
   const id = await employerId();
   const { data, error } = await supabase.from('jobs').select('*,applications(count)').eq('employer_id', id).order('created_at', { ascending: false });
@@ -24,6 +26,7 @@ export async function getEmployerJobs() {
   return data;
 }
 
+// รับ jobId → อ่าน jobs โดยตรวจทั้ง id งานและ employer_id เพื่อจำกัดเป็นงานของตนเอง
 export async function getJobById(id: string) {
   const owner = await employerId();
   const { data, error } = await supabase.from('jobs').select('*').eq('id', id).eq('employer_id', owner).maybeSingle();
@@ -32,13 +35,17 @@ export async function getJobById(id: string) {
   return data;
 }
 
+// job-form-screen.tsx ส่ง form มาที่นี่ → validate → แปลงตัวเลข/ตัดช่องว่าง
+// มี id = UPDATE jobs ของเจ้าของงาน; ไม่มี id = INSERT jobs พร้อม employer_id จาก Auth
+// .select().single() คืนแถวที่บันทึก เพื่อให้หน้าฟอร์มใช้ job.id เปิดหน้าถัดไป
 export async function saveJob(form: JobFormData, id?: string) {
   const validation = validateJob(form);
   if (validation) throw new EmployerError(validation);
   const owner = await employerId();
   // Explicit allowlist: never allow form data to change ownership or timestamps.
+  // Demo urgency is a title tag; do not enable the historical native Push/instant DB fields.
   const values = {
-    title: form.title.trim(), description: form.description.trim(), requirements: form.requirements.trim(),
+    title: taggedJobTitle(form.title,!!form.is_urgent), description: form.description.trim(), requirements: form.requirements.trim(),
     wage: Number(form.wage), wage_type: form.wage_type, location: form.location.trim(),
     category: form.category.trim(), working_date: form.working_date, shift: form.shift.trim(),
     workers_required: Number(form.workers_required), contact_information: form.contact_information.trim(), status: form.status,
@@ -51,6 +58,7 @@ export async function saveJob(form: JobFormData, id?: string) {
   return data;
 }
 
+// รับ id จากหน้ารายการ → DELETE jobs โดยจำกัด employer_id เป็นเจ้าของปัจจุบัน
 export async function deleteJob(id: string) {
   const owner = await employerId();
   const { data, error } = await supabase.from('jobs').delete().eq('id', id).eq('employer_id', owner).select('id').maybeSingle();
@@ -58,6 +66,7 @@ export async function deleteJob(id: string) {
   if (!data) throw new EmployerError('jobNotFound');
 }
 
+// ตรวจเจ้าของงาน → อ่าน applications และ JOIN profiles ผ่าน foreign key ของ applicant_id
 export async function getApplicantsByJob(jobId: string): Promise<Application[]> {
   await getJobById(jobId);
   const { data, error } = await supabase.from('applications')
@@ -77,6 +86,7 @@ export async function getApplicationById(jobId: string, id: string): Promise<App
   return data;
 }
 
+// นายจ้างกดรับ/ปฏิเสธ → UPDATE applications.status โดยจำกัด id ใบสมัครและ job_id ที่เป็นเจ้าของ
 export async function updateApplicationStatus(jobId: string, id: string, status: Exclude<ApplicationStatus, 'pending'>) {
   await getJobById(jobId);
   const { data, error } = await supabase.from('applications').update({ status })
@@ -86,6 +96,7 @@ export async function updateApplicationStatus(jobId: string, id: string, status:
   return data;
 }
 
+// อ่าน employer_profiles JOIN profiles เพื่อรวมข้อมูลบริษัทกับข้อมูลติดต่อในฟอร์มเดียว
 export async function getEmployerProfile(): Promise<BusinessProfile> {
   const id = await employerId();
   const { data, error } = await supabase.from('employer_profiles').select('*,profiles!inner(*)').eq('id', id).single();
@@ -93,6 +104,8 @@ export async function getEmployerProfile(): Promise<BusinessProfile> {
   return data;
 }
 
+// ส่ง form ให้ SQL RPC update_employer_profile ใน 20260921030908_employer_management.sql
+// ฟังก์ชัน SQL อัปเดต profiles และ employer_profiles ใน transaction เดียวกัน
 export async function updateEmployerProfile(form: ProfileFormData) {
   const validation = validateProfile(form);
   if (validation) throw new EmployerError(validation);

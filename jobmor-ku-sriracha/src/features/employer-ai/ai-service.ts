@@ -4,6 +4,8 @@ import { AiError, isRecord, isUuid, parseInsight } from '../../../supabase/funct
 import type { AiRequest, AiResponse } from '../../../supabase/functions/_shared/ai-contracts';
 
 const errorCodes = ['unauthorized','forbidden','notFound','notConfigured','invalidShift','invalidRequest','rateLimited','tooManyCandidates','providerUnavailable','invalidOutput','refused','unavailable'];
+// รับคำขอวิเคราะห์ผู้สมัคร → ส่ง body ไป Edge Function employer-ai → ตรวจ response ก่อนคืนให้ UI
+// คีย์ Gemini อยู่ที่ backend; จุดส่ง HTTP ไป Gemini อยู่ใน _shared/ai-provider.ts
 export async function requestEmployerAi(input: AiRequest, signal?: AbortSignal): Promise<AiResponse> {
   if (!isUuid(input.jobId) || (input.applicationId && !isUuid(input.applicationId))) throw new AiError('realAccountRequired');
   const { data: auth, error: authError } = await supabase.auth.getUser();

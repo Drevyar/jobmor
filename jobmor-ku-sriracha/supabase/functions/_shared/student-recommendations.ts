@@ -1,11 +1,13 @@
 import { AiError, isRecord, textList } from './ai-contracts.ts';
 import type { TimeWindow } from './ai-contracts.ts';
 import { covers, jobWindow, overlaps } from './ai-matching.ts';
+import {isUrgentJob} from './urgent-job-tag.ts';
 
 export type StudentJob = {
   id: string; title: string; description: string; requirements: string; category: string;
   location: string; wage: number; wage_type: string; working_date: string; shift: string;
   workers_required: number; status: string; created_at: string;
+  is_urgent?: boolean;
 };
 export type Preferences = { preferred_category: string; preferred_area: string; minimum_wage: number; wage_type: string };
 export type StudentContext = { skills: string; experience: string; windows: TimeWindow[]; preferences: Preferences;
@@ -42,7 +44,7 @@ export function getEligibleJobs(jobs: StudentJob[], student: StudentContext, now
     if (student.preferences.minimum_wage > 0 && job.wage_type === student.preferences.wage_type) reasons.push('The listed wage meets your minimum.');
     eligible.push({ job, availability, reasons });
   }
-  return eligible.sort((a,b) => b.job.created_at.localeCompare(a.job.created_at) || a.job.id.localeCompare(b.job.id));
+  return eligible.sort((a,b) => Number(b.availability==='available')-Number(a.availability==='available') || Number(isUrgentJob(b.job))-Number(isUrgentJob(a.job)) || b.job.created_at.localeCompare(a.job.created_at) || a.job.id.localeCompare(b.job.id));
 }
 
 const stringArray = { type: 'array', items: { type: 'string' } };

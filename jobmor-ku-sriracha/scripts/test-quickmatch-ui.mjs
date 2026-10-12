@@ -8,7 +8,7 @@ const source=ts.transpileModule(readFileSync(new URL('../src/features/student-ai
   compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX},
 }).outputText;
 const job={id:'30000000-0000-4000-8000-000000000001',title:'Cafe helper',location:'Sriracha',working_date:'2026-10-01',shift:'18:00 - 22:00',wage:70,wage_type:'hour'};
-function harness(){
+function harness({onApplied}={}){
   const cells=[];let cursor=0;const calls=[];const exports={};
   vm.runInNewContext(source,{exports,require:name=>{
     if(name==='react/jsx-runtime')return{jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props}),Fragment:'Fragment'};
@@ -21,17 +21,19 @@ function harness(){
     if(name==='./service')return{studentAi:async action=>{calls.push([action]);return{kind:'quickmatch',job,reasons:['Relevant experience'],availability:'unknown',needsProfile:false,missing:{availability:true,skills:false}}}};
     throw Error(`Unexpected import ${name}`);
   }});
-  function render(){cursor=0;const nodes=[];function visit(node){if(!node||typeof node!=='object')return;if(Array.isArray(node))return node.forEach(visit);nodes.push(node);visit(node.props?.children)}visit(exports.QuickMatchPanel());return nodes}
+  function render(){cursor=0;const nodes=[];function visit(node){if(!node||typeof node!=='object')return;if(Array.isArray(node))return node.forEach(visit);nodes.push(node);visit(node.props?.children)}visit(exports.QuickMatchPanel({onApplied}));return nodes}
   return{calls,render,button:label=>render().find(node=>node.type==='Button'&&node.props.label===`studentAi.${label}`)?.props};
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 test('QuickMatch Interested requires confirmation before creating the existing application',async()=>{
-  const h=harness();h.button('find').onPress();await settle();
+  let refreshes=0;const h=harness({onApplied:()=>refreshes++});h.button('find').onPress();await settle();
   assert.equal(h.calls.filter(call=>call[0]==='apply').length,0);
+  assert.equal(refreshes,0);
   h.button('interested').onPress();
   assert.equal(h.render().find(node=>node.type==='Modal').props.visible,true);
   assert.equal(h.calls.filter(call=>call[0]==='apply').length,0);
   h.button('confirmApply').onPress();await settle();
   assert.deepEqual(h.calls.filter(call=>call[0]==='apply'),[['apply',job.id]]);
+  assert.equal(refreshes,1);
   assert.equal(h.render().find(node=>node.type==='Modal').props.visible,false);
 });

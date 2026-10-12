@@ -416,6 +416,10 @@ verify_jwt = false
 [functions.student-ai]
 # Bearer token is verified by auth.getUser before any profile or job reads.
 verify_jwt = false
+
+[functions.urgent-jobs]
+# Historical endpoint returns 410; the Expo Go demo has no native Push worker.
+verify_jwt = false
 # Directory under `supabase/` where declarative files are written.
 # declarative_schema_path = "./schemas"
 # JSON string passed through to pg-delta SQL formatting. When omitted, SQL is

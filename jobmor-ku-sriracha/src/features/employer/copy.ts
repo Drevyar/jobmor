@@ -23,6 +23,8 @@ export const employerCopy = {
     accept: 'Accept', reject: 'Reject', updated: 'Application status updated.', unavailable: 'Not provided',
     count: 'Applicants', overview: 'Employer overview', activeJobs: 'Active jobs', totalJobs: 'Total jobs',
     formHint: 'All fields are required except requirements. Date and shift use the workplace’s local time.',
+    urgent:'Urgent hourly job',urgentHint:'Students see an Urgent badge and apply through the usual flow. Review and accept applicants as normal.',
+    invalidUrgent:'Urgent jobs need hourly pay and a shift like 18:00 - 22:00. Active urgent shifts must start in the future.',
   },
   th: {
     jobs: 'งานของฉัน', create: 'สร้างประกาศงาน', edit: 'แก้ไขงาน', view: 'ดูรายละเอียด', delete: 'ลบงาน',
@@ -48,5 +50,7 @@ export const employerCopy = {
     accept: 'รับเข้าทำงาน', reject: 'ปฏิเสธ', updated: 'อัปเดตสถานะใบสมัครแล้ว', unavailable: 'ไม่ได้ระบุ',
     count: 'ผู้สมัคร', overview: 'ภาพรวมนายจ้าง', activeJobs: 'งานที่เปิดรับ', totalJobs: 'งานทั้งหมด',
     formHint: 'กรอกทุกช่องยกเว้นคุณสมบัติ วันที่และกะใช้เวลาท้องถิ่นของสถานที่ทำงาน',
+    urgent:'งานด่วนรายชั่วโมง',urgentHint:'นิสิตเห็นป้ายงานด่วนและสมัครผ่านขั้นตอนเดิม คุณตรวจและรับผู้สมัครได้ตามปกติ',
+    invalidUrgent:'งานด่วนต้องเป็นค่าจ้างรายชั่วโมง มีกะรูปแบบ 18:00 - 22:00 ถ้าเปิดรับ กะต้องเริ่มในอนาคต',
   },
 };
